@@ -278,7 +278,7 @@ class InvoiceManagerAPITester:
         )
         
         if success:
-            expected_keys = ['total_customers', 'total_invoices', 'total_revenue', 'pending_invoices']
+            expected_keys = ['total_customers', 'total_invoices', 'total_revenue', 'pending_invoices', 'total_todos', 'pending_todos']
             for key in expected_keys:
                 if key in stats:
                     print(f"   {key}: {stats[key]}")
