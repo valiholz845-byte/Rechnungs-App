@@ -295,6 +295,7 @@ const QuickTodoForm = ({ onSuccess, todo }) => {
   );
 };
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [topCustomers, setTopCustomers] = useState([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [stats, setStats] = useState({});
