@@ -314,6 +314,55 @@ class EmailService:
 
 # Initialize email service
 email_service = EmailService()
+
+# Background task for sending invoice email
+async def send_invoice_email_task(invoice_id: str):
+    try:
+        # Get invoice
+        invoice = await db.invoices.find_one({"id": invoice_id})
+        if not invoice:
+            logger.error(f"Invoice not found: {invoice_id}")
+            return
+        
+        # Get customer
+        customer = await db.customers.find_one({"id": invoice["customer_id"]})
+        if not customer:
+            logger.error(f"Customer not found: {invoice['customer_id']}")
+            return
+        
+        # Get company data
+        company = await db.company_data.find_one({})
+        if not company:
+            # Use default company data
+            company = {
+                "company_name": "Ihre Firma GmbH",
+                "address": "Musterstraße 123",
+                "postal_code": "12345",
+                "city": "Musterstadt",
+                "phone": "+49 123 456789",
+                "email": "info@ihrefirma.de",
+                "website": "www.ihrefirma.de",
+                "bank_name": "Deutsche Bank",
+                "iban": "DE89 1234 5678 9012 3456 78",
+                "bic": "DEUTDEDBXXX",
+                "tax_number": "DE123456789"
+            }
+        
+        # Send email
+        success = await email_service.send_invoice_email(invoice, customer, company)
+        
+        if success:
+            # Update invoice status
+            await db.invoices.update_one(
+                {"id": invoice_id},
+                {"$set": {"status": "sent", "email_sent_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            logger.info(f"Invoice {invoice['invoice_number']} email sent and status updated")
+        
+    except Exception as e:
+        logger.error(f"Error in send_invoice_email_task: {str(e)}")
+
+# Helper functions
 def prepare_for_mongo(data):
     if isinstance(data, dict):
         for key, value in data.items():
