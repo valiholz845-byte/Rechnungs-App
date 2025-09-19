@@ -2453,6 +2453,172 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
     </div>
   );
 };
+
+// Professional German Quote Print Component
+const PrintQuote = ({ quote, companyData, customer }) => {
+  const printQuote = () => {
+    window.print();
+  };
+
+  if (!quote || !companyData || !customer) {
+    return <div className="text-white">Daten werden geladen...</div>;
+  }
+
+  return (
+    <div className="print-container">
+      <div className="no-print mb-4 flex justify-end">
+        <Button onClick={printQuote} className="bg-blue-600 hover:bg-blue-700">
+          <Printer className="h-4 w-4 mr-2" />
+          Drucken
+        </Button>
+      </div>
+
+      <div className="print-content bg-white text-black p-8 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">{companyData.company_name}</h1>
+            <div className="text-sm text-gray-600 mt-2">
+              <p>{companyData.address}</p>
+              <p>{companyData.postal_code} {companyData.city}</p>
+              {companyData.phone && <p>Tel: {companyData.phone}</p>}
+              {companyData.email && <p>E-Mail: {companyData.email}</p>}
+              {companyData.website && <p>Web: {companyData.website}</p>}
+            </div>
+          </div>
+          <div className="text-right">
+            <h2 className="text-xl font-bold text-gray-800">ANGEBOT</h2>
+            <p className="text-sm text-gray-600 mt-2">Nr: {quote.quote_number}</p>
+            <p className="text-sm text-gray-600">Datum: {new Date(quote.quote_date).toLocaleDateString('de-DE')}</p>
+          </div>
+        </div>
+
+        {/* Customer Address */}
+        <div className="mb-8">
+          <div className="text-sm text-gray-600 mb-2">
+            {companyData.company_name} • {companyData.address} • {companyData.postal_code} {companyData.city}
+          </div>
+          <div className="border-t border-gray-300 pt-4">
+            <p className="font-semibold">{customer.name}</p>
+            <p>{customer.address}</p>
+            <p>{customer.postal_code} {customer.city}</p>
+          </div>
+        </div>
+
+        {/* Quote Details */}
+        <div className="mb-8">
+          <div className="grid grid-cols-2 gap-8 text-sm">
+            <div>
+              <p><span className="font-semibold">Angebotsdatum:</span> {new Date(quote.quote_date).toLocaleDateString('de-DE')}</p>
+              <p><span className="font-semibold">Gültig bis:</span> {new Date(quote.valid_until).toLocaleDateString('de-DE')}</p>
+            </div>
+            <div>
+              <p><span className="font-semibold">Kunde:</span> {customer.name}</p>
+              {customer.email && <p><span className="font-semibold">E-Mail:</span> {customer.email}</p>}
+            </div>
+          </div>
+        </div>
+
+        {/* Items Table */}
+        <div className="mb-8">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b-2 border-gray-300">
+                <th className="text-left py-2 font-semibold">Pos.</th>
+                <th className="text-left py-2 font-semibold">Beschreibung</th>
+                <th className="text-right py-2 font-semibold">Menge</th>
+                <th className="text-right py-2 font-semibold">Einheit</th>
+                <th className="text-right py-2 font-semibold">Einzelpreis</th>
+                <th className="text-right py-2 font-semibold">Gesamtpreis</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quote.items.map((item, index) => (
+                <tr key={index} className="border-b border-gray-200">
+                  <td className="py-2">{index + 1}</td>
+                  <td className="py-2">{item.description}</td>
+                  <td className="py-2 text-right">{item.quantity}</td>
+                  <td className="py-2 text-right">{item.unit}</td>
+                  <td className="py-2 text-right">€{item.unit_price.toFixed(2)}</td>
+                  <td className="py-2 text-right">€{item.total_price.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Totals */}
+        <div className="flex justify-end mb-8">
+          <div className="w-64">
+            <div className="flex justify-between py-1">
+              <span>Zwischensumme:</span>
+              <span>€{quote.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between py-1">
+              <span>MwSt. (19%):</span>
+              <span>€{quote.tax_amount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between py-2 border-t border-gray-300 font-bold text-lg">
+              <span>Gesamtsumme:</span>
+              <span>€{quote.total_amount.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Notes */}
+        {quote.notes && (
+          <div className="mb-8">
+            <h3 className="font-semibold mb-2">Anmerkungen:</h3>
+            <p className="text-sm text-gray-700">{quote.notes}</p>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="border-t border-gray-300 pt-6 text-xs text-gray-600">
+          <div className="grid grid-cols-3 gap-8">
+            <div>
+              <p className="font-semibold mb-1">Kontakt:</p>
+              <p>{companyData.company_name}</p>
+              {companyData.phone && <p>Tel: {companyData.phone}</p>}
+              {companyData.email && <p>E-Mail: {companyData.email}</p>}
+            </div>
+            {companyData.bank_name && (
+              <div>
+                <p className="font-semibold mb-1">Bankverbindung:</p>
+                <p>{companyData.bank_name}</p>
+                {companyData.iban && <p>IBAN: {companyData.iban}</p>}
+                {companyData.bic && <p>BIC: {companyData.bic}</p>}
+              </div>
+            )}
+            {companyData.tax_number && (
+              <div>
+                <p className="font-semibold mb-1">Steuernummer:</p>
+                <p>{companyData.tax_number}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+          .print-content {
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body {
+            background: white !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 const CompanyForm = ({ company, onSuccess }) => {
   const [formData, setFormData] = useState({
     company_name: company?.company_name || '',
