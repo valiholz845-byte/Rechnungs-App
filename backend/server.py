@@ -343,7 +343,70 @@ class EmailService:
 # Initialize email service
 email_service = EmailService()
 
-# Background task for sending invoice email
+# Background task for sending reminder emails
+async def send_todo_reminder_task(todo_id: str):
+    try:
+        # Get todo
+        todo = await db.todos.find_one({"id": todo_id})
+        if not todo:
+            logger.error(f"ToDo not found: {todo_id}")
+            return
+        
+        # Skip if already sent or completed
+        if todo.get("reminder_sent") or todo.get("status") != "pending":
+            return
+        
+        # Get customer if assigned
+        customer = None
+        if todo.get("customer_id"):
+            customer = await db.customers.find_one({"id": todo["customer_id"]})
+        
+        # Get company data
+        company = await db.company_data.find_one({})
+        if not company:
+            company = {
+                "company_name": "Ihre Firma GmbH",
+                "email": "info@ihrefirma.de",
+                "phone": "+49 123 456789"
+            }
+        
+        # Send reminder email
+        success = await email_service.send_todo_reminder_email(todo, customer, company)
+        
+        if success:
+            # Update reminder sent status
+            await db.todos.update_one(
+                {"id": todo_id},
+                {"$set": {"reminder_sent": True, "reminder_sent_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            logger.info(f"ToDo reminder sent for: {todo['title']}")
+        
+    except Exception as e:
+        logger.error(f"Error in send_todo_reminder_task: {str(e)}")
+
+# Background task for checking and sending due reminders
+async def check_due_todos_task():
+    try:
+        now = datetime.now(timezone.utc)
+        current_date = now.date()
+        current_time = now.strftime("%H:%M")
+        
+        # Find todos that are due and haven't been reminded
+        todos = await db.todos.find({
+            "status": "pending",
+            "reminder_sent": False,
+            "due_date": {"$lte": current_date.isoformat()},
+            "due_time": {"$lte": current_time}
+        }).to_list(length=None)
+        
+        for todo in todos:
+            await send_todo_reminder_task(todo["id"])
+        
+        if todos:
+            logger.info(f"Processed {len(todos)} due ToDo reminders")
+            
+    except Exception as e:
+        logger.error(f"Error in check_due_todos_task: {str(e)})")
 async def send_invoice_email_task(invoice_id: str):
     try:
         # Get invoice
