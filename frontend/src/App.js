@@ -2545,6 +2545,7 @@ const QuoteForm = ({ onSuccess }) => {
     </form>
   );
 };
+// Professional German Invoice Print Component
 const PrintInvoice = ({ invoice, companyData, customer }) => {
   const printInvoice = () => {
     window.print();
