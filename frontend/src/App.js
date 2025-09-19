@@ -397,8 +397,8 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Top 5 Customers and Quick Invoice - Stack on Mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+      {/* Top 5 Customers, Quick Invoice, and Upcoming ToDos */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Top 5 Kunden */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
@@ -476,6 +476,71 @@ const Dashboard = () => {
                   Firmendaten bearbeiten
                 </Button>
               </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Upcoming ToDos */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white text-lg md:text-xl flex items-center">
+              <Bell className="h-5 w-5 mr-2 text-yellow-400" />
+              Anstehende ToDos
+            </StatTitle>
+            <CardDescription className="text-slate-400 text-sm">Nächste 5 Aufgaben</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {upcomingTodos.length > 0 ? (
+                upcomingTodos.map((todo) => {
+                  const dueDateTime = new Date(`${todo.due_date}T${todo.due_time}`);
+                  const isOverdue = dueDateTime < new Date();
+                  const isToday = dueDateTime.toDateString() === new Date().toDateString();
+                  
+                  return (
+                    <div key={todo.id} className={`p-3 rounded-lg border-l-4 ${
+                      isOverdue ? 'bg-red-900/20 border-red-500' : 
+                      isToday ? 'bg-yellow-900/20 border-yellow-500' : 
+                      'bg-slate-700 border-blue-500'
+                    }`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white text-sm truncate">{todo.title}</p>
+                          <div className="flex items-center space-x-3 text-xs text-slate-400 mt-1">
+                            <span className="flex items-center">
+                              <CalendarDays className="h-3 w-3 mr-1" />
+                              {dueDateTime.toLocaleDateString('de-DE')}
+                            </span>
+                            <span className="flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {todo.due_time}
+                            </span>
+                          </div>
+                          {todo.customer_name && (
+                            <p className="text-xs text-slate-400 mt-1 flex items-center">
+                              <User className="h-3 w-3 mr-1" />
+                              {todo.customer_name}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markTodoCompleted(todo.id)}
+                          className="text-green-400 hover:text-green-300 hover:bg-green-900/20 ml-2"
+                        >
+                          <CheckSquare className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4">
+                  <CheckSquare className="h-8 w-8 text-slate-500 mx-auto mb-2" />
+                  <p className="text-slate-400 text-sm">Keine anstehenden ToDos</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
