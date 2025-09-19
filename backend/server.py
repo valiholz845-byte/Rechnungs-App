@@ -829,7 +829,9 @@ async def get_dashboard_stats():
         "total_revenue": total_revenue,
         "pending_invoices": pending_invoices,
         "total_todos": await db.todos.count_documents({}),
-        "pending_todos": await db.todos.count_documents({"status": "pending"})
+        "pending_todos": await db.todos.count_documents({"status": "pending"}),
+        "total_quotes": await db.quotes.count_documents({}),
+        "pending_quotes": await db.quotes.count_documents({"status": {"$in": ["draft", "sent"]}})
     }
 
 # ToDo endpoints
