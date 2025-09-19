@@ -195,6 +195,95 @@ h1, h2, h3, h4, h5, h6 {
   .mobile-text-center {
     text-align: center;
   }
+
+  /* Mobile Navigation */
+  .mobile-nav-dropdown {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Mobile Cards */
+  .mobile-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  /* Mobile Tables */
+  .mobile-table {
+    font-size: 0.875rem;
+  }
+
+  .mobile-table th,
+  .mobile-table td {
+    padding: 0.5rem 0.25rem;
+  }
+
+  /* Mobile Forms */
+  .mobile-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Mobile Dialog */
+  .mobile-dialog {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+
+  /* Mobile Chart */
+  .mobile-chart {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  .mobile-chart::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .mobile-chart::-webkit-scrollbar-track {
+    background: var(--primary-medium);
+  }
+
+  .mobile-chart::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+    border-radius: 2px;
+  }
+}
+
+/* Small Mobile (phones in portrait) */
+@media (max-width: 480px) {
+  .mobile-text-sm {
+    font-size: 0.75rem;
+  }
+
+  .mobile-padding-sm {
+    padding: 0.5rem;
+  }
+
+  .mobile-margin-sm {
+    margin: 0.5rem;
+  }
+
+  /* Adjust card spacing for small screens */
+  .mobile-card-spacing {
+    padding: 0.75rem;
+  }
+
+  /* Mobile button adjustments */
+  .mobile-btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
 }
 
 /* Print Styles for Invoices */
