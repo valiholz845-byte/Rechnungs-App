@@ -291,6 +291,8 @@ h1, h2, h3, h4, h5, h6 {
   body {
     background: white !important;
     color: black !important;
+    font-size: 12pt;
+    line-height: 1.4;
   }
   
   .no-print {
@@ -301,6 +303,93 @@ h1, h2, h3, h4, h5, h6 {
     background: white !important;
     color: black !important;
     border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Print-specific table styles */
+  .print-friendly table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+
+  .print-friendly th,
+  .print-friendly td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .print-friendly th {
+    background-color: #f5f5f5 !important;
+    font-weight: bold;
+  }
+
+  /* Print page breaks */
+  .print-page-break {
+    page-break-after: always;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+
+  /* Print header and footer */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+
+  /* Hide navigation and other elements */
+  nav,
+  .navigation,
+  .sidebar,
+  .mobile-menu {
+    display: none !important;
+  }
+
+  /* Ensure proper font sizes for print */
+  .print-friendly h1 {
+    font-size: 24pt;
+    margin-bottom: 12pt;
+  }
+
+  .print-friendly h2 {
+    font-size: 18pt;
+    margin-bottom: 10pt;
+  }
+
+  .print-friendly h3 {
+    font-size: 14pt;
+    margin-bottom: 8pt;
+  }
+
+  .print-friendly p {
+    margin-bottom: 6pt;
+  }
+
+  /* Ensure good contrast for print */
+  .print-friendly * {
+    color: black !important;
+    background: white !important;
+  }
+
+  /* Print-specific grid adjustments */
+  .print-friendly .grid {
+    display: block !important;
+  }
+
+  .print-friendly .grid > div {
+    margin-bottom: 1rem;
   }
 }
 
