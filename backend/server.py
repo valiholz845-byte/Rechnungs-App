@@ -321,6 +321,110 @@ class EmailService:
         except Exception as e:
             logger.error(f"Failed to send ToDo reminder email: {str(e)}")
             return False
+    
+    def generate_invoice_pdf(self, invoice: dict, customer: dict, company: dict) -> io.BytesIO:
+        """Generate PDF for invoice"""
+        try:
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=A4)
+            styles = getSampleStyleSheet()
+            story = []
+            
+            # Company header
+            story.append(Paragraph(f"<b>{company['company_name']}</b>", styles['Title']))
+            story.append(Paragraph(f"{company['address']}<br/>{company['postal_code']} {company['city']}", styles['Normal']))
+            story.append(Spacer(1, 20))
+            
+            # Invoice title
+            story.append(Paragraph(f"<b>RECHNUNG {invoice['invoice_number']}</b>", styles['Heading1']))
+            story.append(Spacer(1, 12))
+            
+            # Customer info
+            story.append(Paragraph("<b>Rechnungsadresse:</b>", styles['Normal']))
+            story.append(Paragraph(f"{customer['name']}<br/>{customer['address']}<br/>{customer['postal_code']} {customer['city']}", styles['Normal']))
+            story.append(Spacer(1, 20))
+            
+            # Invoice details
+            invoice_date = datetime.fromisoformat(invoice['invoice_date']).strftime('%d.%m.%Y')
+            due_date = datetime.fromisoformat(invoice['due_date']).strftime('%d.%m.%Y')
+            
+            details_data = [
+                ['Rechnungsdatum:', invoice_date],
+                ['Fälligkeitsdatum:', due_date]
+            ]
+            
+            details_table = Table(details_data, colWidths=[100, 100])
+            details_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ]))
+            story.append(details_table)
+            story.append(Spacer(1, 20))
+            
+            # Line items
+            headers = ['Pos.', 'Beschreibung', 'Menge', 'Einzelpreis', 'Gesamt']
+            table_data = [headers]
+            
+            for i, item in enumerate(invoice['items'], 1):
+                row = [
+                    str(i),
+                    item['description'],
+                    f"{item['quantity']:.2f}",
+                    f"€{item['unit_price']:.2f}",
+                    f"€{item['total_price']:.2f}"
+                ]
+                table_data.append(row)
+            
+            items_table = Table(table_data, colWidths=[30, 200, 60, 80, 80])
+            items_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            story.append(items_table)
+            story.append(Spacer(1, 20))
+            
+            # Totals
+            totals_data = [
+                ['Zwischensumme:', f"€{invoice['subtotal']:.2f}"],
+                ['MwSt. (19%):', f"€{invoice['tax_amount']:.2f}"],
+                ['<b>Gesamtbetrag:</b>', f"<b>€{invoice['total_amount']:.2f}</b>"]
+            ]
+            
+            totals_table = Table(totals_data, colWidths=[300, 100])
+            totals_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('LINEABOVE', (0, -1), (-1, -1), 2, colors.black),
+            ]))
+            story.append(totals_table)
+            
+            # Footer
+            story.append(Spacer(1, 30))
+            footer_text = f"""
+            <b>Zahlungshinweise:</b><br/>
+            Bitte überweisen Sie den Betrag bis zum {due_date}.<br/>
+            Bank: {company.get('bank_name', 'N/A')}<br/>
+            IBAN: {company.get('iban', 'N/A')}<br/>
+            BIC: {company.get('bic', 'N/A')}<br/>
+            Verwendungszweck: {invoice['invoice_number']}
+            """
+            story.append(Paragraph(footer_text, styles['Normal']))
+            
+            doc.build(story)
+            buffer.seek(0)
+            return buffer
+            
+        except Exception as e:
+            logger.error(f"Failed to generate PDF: {str(e)}")
+            return None
 
 # Initialize email service
 email_service = EmailService()
