@@ -136,6 +136,13 @@ const Navigation = () => {
               📄 Rechnungen
             </Link>
             <Link 
+              to="/quotes" 
+              className="text-slate-300 hover:text-white transition-colors py-2 px-2 rounded hover:bg-slate-700"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              📋 Angebote
+            </Link>
+            <Link 
               to="/company" 
               className="text-slate-300 hover:text-white transition-colors py-2 px-2 rounded hover:bg-slate-700"
               onClick={() => setIsMobileMenuOpen(false)}
