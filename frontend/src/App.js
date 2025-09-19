@@ -730,7 +730,7 @@ const InvoiceForm = ({ onSuccess }) => {
 
   const calculateTotal = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-    const tax = subtotal * 0.19;
+    const tax = applyTax ? subtotal * 0.19 : 0;
     return { subtotal, tax, total: subtotal + tax };
   };
 
