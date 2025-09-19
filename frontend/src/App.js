@@ -313,8 +313,8 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+      {/* Stats Cards with ToDos */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Kunden</CardTitle>
@@ -332,6 +332,26 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-lg md:text-2xl font-bold text-white">{stats.total_invoices || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">ToDos</CardTitle>
+            <CheckSquare className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.total_todos || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Offene ToDos</CardTitle>
+            <Clock className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.pending_todos || 0}</div>
           </CardContent>
         </Card>
         
