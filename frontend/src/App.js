@@ -898,7 +898,7 @@ const InvoicesPage = () => {
       </div>
 
       {selectedInvoice && (
-        <Dialog open={!!selectedInvoice} onOpenChange={() => setSelectedInvoice(null)}>
+        <Dialog open={!!selectedInvoice && !showPrintDialog} onOpenChange={() => setSelectedInvoice(null)}>
           <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
             <DialogHeader>
               <DialogTitle className="text-white">Rechnung Details</DialogTitle>
@@ -965,6 +965,22 @@ const InvoicesPage = () => {
                 </div>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Print Dialog */}
+      {selectedInvoice && showPrintDialog && (
+        <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
+          <DialogContent className="bg-slate-800 border-slate-700 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">Rechnung drucken</DialogTitle>
+            </DialogHeader>
+            <PrintInvoice 
+              invoice={selectedInvoice}
+              companyData={companyData}
+              customer={customers.find(c => c.id === selectedInvoice.customer_id)}
+            />
           </DialogContent>
         </Dialog>
       )}
