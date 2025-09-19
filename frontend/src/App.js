@@ -2046,6 +2046,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/todos" element={<TodosPage />} />
           <Route path="/company" element={<CompanyPage />} />
         </Routes>
       </BrowserRouter>
