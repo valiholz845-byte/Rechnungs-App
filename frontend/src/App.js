@@ -28,7 +28,10 @@ import {
   Phone,
   Trash2,
   Edit,
-  Eye
+  Eye,
+  Printer,
+  Send,
+  Menu
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
