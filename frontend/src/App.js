@@ -289,6 +289,7 @@ const Dashboard = () => {
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [stats, setStats] = useState({});
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
+  const [upcomingTodos, setUpcomingTodos] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -296,18 +297,36 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [customersRes, revenueRes, statsRes] = await Promise.all([
+      const [customersRes, revenueRes, statsRes, todosRes] = await Promise.all([
         axios.get(`${API}/dashboard/top-customers`),
         axios.get(`${API}/dashboard/monthly-revenue`),
-        axios.get(`${API}/dashboard/stats`)
+        axios.get(`${API}/dashboard/stats`),
+        axios.get(`${API}/todos?status=pending`)
       ]);
       
       setTopCustomers(customersRes.data);
       setMonthlyRevenue(revenueRes.data);
       setStats(statsRes.data);
+      
+      // Get upcoming todos (next 5)
+      const sortedTodos = todosRes.data
+        .sort((a, b) => new Date(`${a.due_date}T${a.due_time}`) - new Date(`${b.due_date}T${b.due_time}`))
+        .slice(0, 5);
+      setUpcomingTodos(sortedTodos);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Fehler beim Laden der Dashboard-Daten');
+    }
+  };
+
+  const markTodoCompleted = async (todoId) => {
+    try {
+      await axios.put(`${API}/todos/${todoId}`, { status: 'completed' });
+      toast.success('ToDo als erledigt markiert');
+      fetchDashboardData();
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      toast.error('Fehler beim Aktualisieren des ToDos');
     }
   };
 
