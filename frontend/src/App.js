@@ -189,7 +189,7 @@ const Dashboard = () => {
                   Neue Rechnung erstellen
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
+              <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto" style={{zIndex: 1000}}>
                 <DialogHeader>
                   <DialogTitle className="text-white">Neue Rechnung</DialogTitle>
                   <DialogDescription className="text-slate-400">
