@@ -1339,6 +1339,15 @@ const TodosPage = () => {
   const [filter, setFilter] = useState('all'); // all, pending, completed
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
+  
+  // Get filter from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlFilter = urlParams.get('filter');
+    if (urlFilter === 'pending') {
+      setFilter('pending');
+    }
+  }, []);
 
   useEffect(() => {
     fetchTodos();
