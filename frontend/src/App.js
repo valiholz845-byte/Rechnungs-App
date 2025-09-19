@@ -156,14 +156,14 @@ const Navigation = () => {
 };
 
 // Quick ToDo Form Component
-const QuickTodoForm = ({ onSuccess }) => {
+const QuickTodoForm = ({ onSuccess, todo }) => {
   const [customers, setCustomers] = useState([]);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    customer_id: 'none',
-    due_date: new Date().toISOString().split('T')[0],
-    due_time: '09:00'
+    title: todo?.title || '',
+    description: todo?.description || '',
+    customer_id: todo?.customer_id || 'none',
+    due_date: todo?.due_date || new Date().toISOString().split('T')[0],
+    due_time: todo?.due_time || '09:00'
   });
 
   useEffect(() => {
@@ -191,21 +191,31 @@ const QuickTodoForm = ({ onSuccess }) => {
         due_time: formData.due_time
       };
 
-      await axios.post(`${API}/todos`, todoData);
-      toast.success('ToDo erfolgreich erstellt! Erinnerung wird gesendet.');
+      if (todo) {
+        // Update existing todo
+        await axios.put(`${API}/todos/${todo.id}`, todoData);
+        toast.success('ToDo erfolgreich aktualisiert!');
+      } else {
+        // Create new todo
+        await axios.post(`${API}/todos`, todoData);
+        toast.success('ToDo erfolgreich erstellt! Erinnerung wird gesendet.');
+      }
+      
       onSuccess();
       
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        customer_id: 'none',
-        due_date: new Date().toISOString().split('T')[0],
-        due_time: '09:00'
-      });
+      // Reset form if creating new
+      if (!todo) {
+        setFormData({
+          title: '',
+          description: '',
+          customer_id: 'none',
+          due_date: new Date().toISOString().split('T')[0],
+          due_time: '09:00'
+        });
+      }
     } catch (error) {
-      console.error('Error creating ToDo:', error);
-      toast.error('Fehler beim Erstellen des ToDos');
+      console.error('Error saving ToDo:', error);
+      toast.error('Fehler beim Speichern des ToDos');
     }
   };
 
@@ -279,7 +289,7 @@ const QuickTodoForm = ({ onSuccess }) => {
 
       <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
         <Clock className="h-4 w-4 mr-2" />
-        ToDo mit Erinnerung erstellen
+        {todo ? 'ToDo aktualisieren' : 'ToDo mit Erinnerung erstellen'}
       </Button>
     </form>
   );
