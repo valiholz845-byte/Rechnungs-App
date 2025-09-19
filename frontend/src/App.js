@@ -36,14 +36,18 @@ const API = `${BACKEND_URL}/api`;
 
 // Navigation Component
 const Navigation = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <nav className="bg-slate-900 border-b border-slate-800 px-6 py-4">
+    <nav className="bg-slate-900 border-b border-slate-800 px-4 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <FileText className="h-8 w-8 text-blue-400" />
-          <h1 className="text-2xl font-bold text-white">RechnungsManager</h1>
+        <div className="flex items-center space-x-3">
+          <FileText className="h-6 w-6 md:h-8 md:w-8 text-blue-400" />
+          <h1 className="text-lg md:text-2xl font-bold text-white">RechnungsManager</h1>
         </div>
-        <div className="flex items-center space-x-6">
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center space-x-6">
           <Link to="/" className="text-slate-300 hover:text-white transition-colors">
             Dashboard
           </Link>
@@ -57,7 +61,57 @@ const Navigation = () => {
             Firmendaten
           </Link>
         </div>
+
+        {/* Mobile Hamburger Menu */}
+        <div className="md:hidden">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="text-white hover:bg-slate-800 p-2"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </Button>
+        </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-slate-800 border-t border-slate-700 px-4 py-2">
+          <div className="flex flex-col space-y-2">
+            <Link 
+              to="/" 
+              className="text-slate-300 hover:text-white transition-colors py-2 px-2 rounded hover:bg-slate-700"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              📈 Dashboard
+            </Link>
+            <Link 
+              to="/customers" 
+              className="text-slate-300 hover:text-white transition-colors py-2 px-2 rounded hover:bg-slate-700"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              👥 Kunden
+            </Link>
+            <Link 
+              to="/invoices" 
+              className="text-slate-300 hover:text-white transition-colors py-2 px-2 rounded hover:bg-slate-700"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              📄 Rechnungen
+            </Link>
+            <Link 
+              to="/company" 
+              className="text-slate-300 hover:text-white transition-colors py-2 px-2 rounded hover:bg-slate-700"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              🏢 Firmendaten
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
