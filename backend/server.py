@@ -808,6 +808,120 @@ async def get_dashboard_stats():
         "pending_todos": await db.todos.count_documents({"status": "pending"})
     }
 
+# ToDo endpoints
+@api_router.post("/todos", response_model=ToDo)
+async def create_todo(todo_data: ToDoCreate, background_tasks: BackgroundTasks):
+    # Get customer info if provided
+    customer_name = None
+    if todo_data.customer_id:
+        customer = await db.customers.find_one({"id": todo_data.customer_id})
+        if customer:
+            customer_name = customer["name"]
+    
+    # Parse date
+    due_date = datetime.fromisoformat(todo_data.due_date)
+    
+    todo = ToDo(
+        title=todo_data.title,
+        description=todo_data.description,
+        customer_id=todo_data.customer_id,
+        customer_name=customer_name,
+        due_date=due_date,
+        due_time=todo_data.due_time
+    )
+    
+    todo_data_dict = prepare_for_mongo(todo.dict())
+    await db.todos.insert_one(todo_data_dict)
+    
+    # Schedule reminder check (will be sent when due)
+    logger.info(f"ToDo created: {todo.title} - Due: {due_date.strftime('%d.%m.%Y')} at {todo.due_time}")
+    
+    return todo
+
+@api_router.get("/todos", response_model=List[ToDo])
+async def get_todos(status: str = None):
+    query = {}
+    if status:
+        query["status"] = status
+    
+    todos = await db.todos.find(query).sort("due_date", 1).to_list(length=None)
+    return [ToDo(**parse_from_mongo(todo)) for todo in todos]
+
+@api_router.get("/todos/{todo_id}", response_model=ToDo)
+async def get_todo(todo_id: str):
+    todo = await db.todos.find_one({"id": todo_id})
+    if not todo:
+        raise HTTPException(status_code=404, detail="ToDo not found")
+    return ToDo(**parse_from_mongo(todo))
+
+@api_router.put("/todos/{todo_id}", response_model=ToDo)
+async def update_todo(todo_id: str, todo_update: ToDoUpdate):
+    existing_todo = await db.todos.find_one({"id": todo_id})
+    if not existing_todo:
+        raise HTTPException(status_code=404, detail="ToDo not found")
+    
+    update_data = {k: v for k, v in todo_update.dict().items() if v is not None}
+    
+    # Handle customer update
+    if "customer_id" in update_data:
+        if update_data["customer_id"]:
+            customer = await db.customers.find_one({"id": update_data["customer_id"]})
+            update_data["customer_name"] = customer["name"] if customer else None
+        else:
+            update_data["customer_name"] = None
+    
+    # Handle date parsing
+    if "due_date" in update_data:
+        update_data["due_date"] = datetime.fromisoformat(update_data["due_date"]).isoformat()
+    
+    # Handle completion
+    if update_data.get("status") == "completed" and existing_todo.get("status") != "completed":
+        update_data["completed_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Reset reminder if date/time changed
+    if "due_date" in update_data or "due_time" in update_data:
+        update_data["reminder_sent"] = False
+    
+    result = await db.todos.update_one(
+        {"id": todo_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="ToDo not found")
+    
+    # Get updated todo
+    updated_todo = await db.todos.find_one({"id": todo_id})
+    return ToDo(**parse_from_mongo(updated_todo))
+
+@api_router.delete("/todos/{todo_id}")
+async def delete_todo(todo_id: str):
+    result = await db.todos.delete_one({"id": todo_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="ToDo not found")
+    return {"message": "ToDo deleted successfully"}
+
+@api_router.post("/todos/{todo_id}/send-reminder")
+async def send_todo_reminder(todo_id: str, background_tasks: BackgroundTasks):
+    """Manually send ToDo reminder"""
+    todo = await db.todos.find_one({"id": todo_id})
+    if not todo:
+        raise HTTPException(status_code=404, detail="ToDo not found")
+    
+    if not SMTP_USERNAME or not SMTP_PASSWORD:
+        raise HTTPException(status_code=500, detail="Email service not configured")
+    
+    # Add background task for reminder sending
+    background_tasks.add_task(send_todo_reminder_task, todo_id)
+    
+    return {"message": "Reminder send task scheduled successfully"}
+
+@api_router.get("/todos/due/check")
+async def check_due_todos(background_tasks: BackgroundTasks):
+    """Manually trigger due ToDo check"""
+    background_tasks.add_task(check_due_todos_task)
+    return {"message": "Due ToDo check scheduled"}
+
 # Include router
 app.include_router(api_router)
 
