@@ -171,6 +171,7 @@ class InvoiceCreate(BaseModel):
     invoice_date: str
     due_date: str
     notes: Optional[str] = None
+    apply_tax: bool = True  # New field
 
 class Quote(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
