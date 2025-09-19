@@ -1303,7 +1303,288 @@ const InvoicesPage = () => {
   );
 };
 
-// Company Page Component
+// ToDos Page Component
+const TodosPage = () => {
+  const [todos, setTodos] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [filter, setFilter] = useState('all'); // all, pending, completed
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingTodo, setEditingTodo] = useState(null);
+
+  useEffect(() => {
+    fetchTodos();
+    fetchCustomers();
+  }, [filter]);
+
+  const fetchTodos = async () => {
+    try {
+      const url = filter === 'all' ? `${API}/todos` : `${API}/todos?status=${filter}`;
+      const response = await axios.get(url);
+      setTodos(response.data);
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      toast.error('Fehler beim Laden der ToDos');
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
+  const handleDelete = async (todoId) => {
+    if (window.confirm('Möchten Sie dieses ToDo wirklich löschen?')) {
+      try {
+        await axios.delete(`${API}/todos/${todoId}`);
+        toast.success('ToDo erfolgreich gelöscht');
+        fetchTodos();
+      } catch (error) {
+        console.error('Error deleting todo:', error);
+        toast.error('Fehler beim Löschen des ToDos');
+      }
+    }
+  };
+
+  const handleStatusChange = async (todoId, newStatus) => {
+    try {
+      await axios.put(`${API}/todos/${todoId}`, { status: newStatus });
+      toast.success(`ToDo als ${newStatus === 'completed' ? 'erledigt' : 'offen'} markiert`);
+      fetchTodos();
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      toast.error('Fehler beim Aktualisieren des ToDos');
+    }
+  };
+
+  const sendReminder = async (todoId) => {
+    try {
+      await axios.post(`${API}/todos/${todoId}/send-reminder`);
+      toast.success('Erinnerung wurde gesendet');
+    } catch (error) {
+      console.error('Error sending reminder:', error);
+      toast.error('Fehler beim Senden der Erinnerung');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20', label: 'Offen' },
+      completed: { color: 'bg-green-500/10 text-green-500 border-green-500/20', label: 'Erledigt' }
+    };
+    
+    const config = statusConfig[status] || statusConfig.pending;
+    return (
+      <Badge className={`${config.color} border`}>
+        {config.label}
+      </Badge>
+    );
+  };
+
+  const getPriorityColor = (dueDate, dueTime, status) => {
+    if (status === 'completed') return 'border-green-500';
+    
+    const dueDateTime = new Date(`${dueDate}T${dueTime}`);
+    const now = new Date();
+    const isOverdue = dueDateTime < now;
+    const isToday = dueDateTime.toDateString() === now.toDateString();
+    
+    if (isOverdue) return 'border-red-500 bg-red-900/10';
+    if (isToday) return 'border-yellow-500 bg-yellow-900/10';
+    return 'border-slate-600';
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white">ToDo-Verwaltung</h1>
+          <p className="text-slate-400">Verwalten Sie Ihre Aufgaben und Erinnerungen</p>
+        </div>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Neues ToDo
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-slate-800 border-slate-700 max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-white">Neues ToDo erstellen</DialogTitle>
+            </DialogHeader>
+            <QuickTodoForm onSuccess={() => {
+              setShowAddDialog(false);
+              fetchTodos();
+            }} />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Filter Buttons */}
+      <div className="flex space-x-4 mb-6">
+        <Button
+          variant={filter === 'all' ? 'default' : 'outline'}
+          onClick={() => setFilter('all')}
+          className={filter === 'all' ? 'bg-blue-600' : 'border-slate-600 text-slate-200 hover:bg-slate-700'}
+        >
+          Alle
+        </Button>
+        <Button
+          variant={filter === 'pending' ? 'default' : 'outline'}
+          onClick={() => setFilter('pending')}
+          className={filter === 'pending' ? 'bg-blue-600' : 'border-slate-600 text-slate-200 hover:bg-slate-700'}
+        >
+          Offen
+        </Button>
+        <Button
+          variant={filter === 'completed' ? 'default' : 'outline'}
+          onClick={() => setFilter('completed')}
+          className={filter === 'completed' ? 'bg-blue-600' : 'border-slate-600 text-slate-200 hover:bg-slate-700'}
+        >
+          Erledigt
+        </Button>
+      </div>
+
+      {/* ToDos List */}
+      <div className="space-y-4">
+        {todos.map((todo) => {
+          const dueDateTime = new Date(`${todo.due_date}T${todo.due_time}`);
+          const isOverdue = dueDateTime < new Date() && todo.status === 'pending';
+          
+          return (
+            <Card key={todo.id} className={`bg-slate-800 border-slate-700 ${getPriorityColor(todo.due_date, todo.due_time, todo.status)}`}>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center space-x-4">
+                      <h3 className="text-lg font-semibold text-white">{todo.title}</h3>
+                      {getStatusBadge(todo.status)}
+                      {isOverdue && (
+                        <Badge className="bg-red-500/10 text-red-500 border-red-500/20 border">
+                          Überfällig
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {todo.description && (
+                      <p className="text-slate-300 text-sm">{todo.description}</p>
+                    )}
+                    
+                    <div className="flex items-center space-x-6 text-sm text-slate-400">
+                      <span className="flex items-center">
+                        <CalendarDays className="h-4 w-4 mr-2" />
+                        {dueDateTime.toLocaleDateString('de-DE')}
+                      </span>
+                      <span className="flex items-center">
+                        <Clock className="h-4 w-4 mr-2" />
+                        {todo.due_time} Uhr
+                      </span>
+                      {todo.customer_name && (
+                        <span className="flex items-center">
+                          <User className="h-4 w-4 mr-2" />
+                          {todo.customer_name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-2 ml-4">
+                    {todo.status === 'pending' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(todo.id, 'completed')}
+                        className="border-green-600 text-green-400 hover:bg-green-900/20"
+                      >
+                        <CheckSquare className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
+                    {todo.status === 'completed' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(todo.id, 'pending')}
+                        className="border-yellow-600 text-yellow-400 hover:bg-yellow-900/20"
+                      >
+                        <Clock className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendReminder(todo.id)}
+                      className="border-blue-600 text-blue-400 hover:bg-blue-900/20"
+                    >
+                      <Bell className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingTodo(todo)}
+                      className="border-slate-600 text-slate-200 hover:bg-slate-700"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(todo.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {todos.length === 0 && (
+        <div className="text-center py-12">
+          <CheckSquare className="h-16 w-16 text-slate-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-slate-300 mb-2">
+            {filter === 'all' ? 'Keine ToDos' : filter === 'pending' ? 'Keine offenen ToDos' : 'Keine erledigten ToDos'}
+          </h3>
+          <p className="text-slate-400 mb-6">
+            {filter === 'all' ? 'Erstellen Sie Ihr erstes ToDo' : 'Hier werden die entsprechenden ToDos angezeigt'}
+          </p>
+          {filter === 'all' && (
+            <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Erstes ToDo erstellen
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Edit ToDo Dialog */}
+      {editingTodo && (
+        <Dialog open={!!editingTodo} onOpenChange={() => setEditingTodo(null)}>
+          <DialogContent className="bg-slate-800 border-slate-700 max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-white">ToDo bearbeiten</DialogTitle>
+            </DialogHeader>
+            <QuickTodoForm 
+              todo={editingTodo}
+              onSuccess={() => {
+                setEditingTodo(null);
+                fetchTodos();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
 const CompanyPage = () => {
   const [companyData, setCompanyData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
