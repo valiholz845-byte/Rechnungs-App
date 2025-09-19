@@ -1058,6 +1058,7 @@ async def convert_quote_to_invoice(quote_id: str, background_tasks: BackgroundTa
         "due_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
         "status": "draft",
         "notes": f"Basierend auf {quote['quote_number']}" + (f" - {quote.get('notes', '')}" if quote.get('notes') else ""),
+        "apply_tax": quote.get("apply_tax", True),  # Preserve tax setting from quote
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
