@@ -68,6 +68,9 @@ const Navigation = () => {
           <Link to="/invoices" className="text-slate-300 hover:text-white transition-colors">
             Rechnungen
           </Link>
+          <Link to="/quotes" className="text-slate-300 hover:text-white transition-colors">
+            Angebote
+          </Link>
           <Link to="/company" className="text-slate-300 hover:text-white transition-colors">
             Firmendaten
           </Link>
