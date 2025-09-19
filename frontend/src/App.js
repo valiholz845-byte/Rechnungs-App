@@ -1635,6 +1635,297 @@ const TodosPage = () => {
     </div>
   );
 };
+
+// Quotes Page Component
+const QuotesPage = () => {
+  const [quotes, setQuotes] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedQuote, setSelectedQuote] = useState(null);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [companyData, setCompanyData] = useState(null);
+
+  useEffect(() => {
+    fetchQuotes();
+    fetchCustomers();
+    fetchCompanyData();
+  }, []);
+
+  const fetchQuotes = async () => {
+    try {
+      const response = await axios.get(`${API}/quotes`);
+      setQuotes(response.data);
+    } catch (error) {
+      console.error('Error fetching quotes:', error);
+      toast.error('Fehler beim Laden der Angebote');
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
+  const fetchCompanyData = async () => {
+    try {
+      const response = await axios.get(`${API}/company`);
+      setCompanyData(response.data);
+    } catch (error) {
+      console.error('Error fetching company data:', error);
+    }
+  };
+
+  const updateQuoteStatus = async (quoteId, status) => {
+    try {
+      await axios.put(`${API}/quotes/${quoteId}/status`, { status });
+      toast.success('Status erfolgreich aktualisiert');
+      fetchQuotes();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Fehler beim Aktualisieren des Status');
+    }
+  };
+
+  const convertToInvoice = async (quoteId) => {
+    try {
+      const response = await axios.post(`${API}/quotes/${quoteId}/convert-to-invoice`);
+      toast.success(`Angebot zu Rechnung ${response.data.invoice_number} konvertiert`);
+      fetchQuotes();
+    } catch (error) {
+      console.error('Error converting quote:', error);
+      toast.error(error.response?.data?.detail || 'Fehler beim Konvertieren des Angebots');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      draft: { color: 'bg-gray-500/10 text-gray-500 border-gray-500/20', label: 'Entwurf' },
+      sent: { color: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: 'Versendet' },
+      accepted: { color: 'bg-green-500/10 text-green-500 border-green-500/20', label: 'Angenommen' },
+      rejected: { color: 'bg-red-500/10 text-red-500 border-red-500/20', label: 'Abgelehnt' },
+      converted: { color: 'bg-purple-500/10 text-purple-500 border-purple-500/20', label: 'Zu Rechnung' }
+    };
+    
+    const config = statusConfig[status] || statusConfig.draft;
+    return (
+      <Badge className={`${config.color} border`}>
+        {config.label}
+      </Badge>
+    );
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Angebots-Verwaltung</h1>
+          <p className="text-slate-400">Verwalten Sie Ihre Angebote und Kostenvoranschläge</p>
+        </div>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Neues Angebot
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">Neues Angebot</DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Erstelle ein neues Angebot für einen Kunden
+              </DialogDescription>
+            </DialogHeader>
+            <QuoteForm onSuccess={() => {
+              setShowAddDialog(false);
+              fetchQuotes();
+            }} />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="space-y-4">
+        {quotes.map((quote) => (
+          <Card key={quote.id} className="bg-slate-800 border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-4">
+                    <h3 className="text-lg font-semibold text-white">{quote.quote_number}</h3>
+                    {getStatusBadge(quote.status)}
+                  </div>
+                  <p className="text-slate-300">{quote.customer_name}</p>
+                  <div className="flex items-center space-x-6 text-sm text-slate-400">
+                    <span>Datum: {new Date(quote.quote_date).toLocaleDateString('de-DE')}</span>
+                    <span>Gültig bis: {new Date(quote.valid_until).toLocaleDateString('de-DE')}</span>
+                    <span>{quote.items.length} Position(en)</span>
+                  </div>
+                </div>
+                <div className="text-right space-y-2">
+                  <p className="text-2xl font-bold text-white">
+                    €{quote.total_amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                  </p>
+                  <div className="flex space-x-2 flex-wrap gap-2">
+                    <Select value={quote.status} onValueChange={(status) => updateQuoteStatus(quote.id, status)}>
+                      <SelectTrigger className="w-32 bg-slate-700 border-slate-600 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Entwurf</SelectItem>
+                        <SelectItem value="sent">Versendet</SelectItem>
+                        <SelectItem value="accepted">Angenommen</SelectItem>
+                        <SelectItem value="rejected">Abgelehnt</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {quote.status === 'accepted' && quote.status !== 'converted' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => convertToInvoice(quote.id)}
+                        className="border-green-600 text-green-400 hover:bg-green-900/20"
+                      >
+                        <ArrowRight className="h-4 w-4 mr-1" />
+                        Zu Rechnung
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedQuote(quote)}
+                      className="border-slate-600 text-slate-200 hover:bg-slate-700"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedQuote(quote);
+                        setShowPrintDialog(true);
+                      }}
+                      className="border-slate-600 text-slate-200 hover:bg-slate-700"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {quotes.length === 0 && (
+        <div className="text-center py-12">
+          <FileCheck className="h-16 w-16 text-slate-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-slate-300 mb-2">Keine Angebote</h3>
+          <p className="text-slate-400 mb-6">Erstellen Sie Ihr erstes Angebot</p>
+          <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Erstes Angebot erstellen
+          </Button>
+        </div>
+      )}
+
+      {/* Quote Details Dialog */}
+      {selectedQuote && !showPrintDialog && (
+        <Dialog open={!!selectedQuote} onOpenChange={() => setSelectedQuote(null)}>
+          <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-white">Angebot Details</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-400">Angebotsnummer:</p>
+                  <p className="text-white font-medium">{selectedQuote.quote_number}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Kunde:</p>
+                  <p className="text-white font-medium">{selectedQuote.customer_name}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Datum:</p>
+                  <p className="text-white font-medium">
+                    {new Date(selectedQuote.quote_date).toLocaleDateString('de-DE')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Gültig bis:</p>
+                  <p className="text-white font-medium">
+                    {new Date(selectedQuote.valid_until).toLocaleDateString('de-DE')}
+                  </p>
+                </div>
+              </div>
+              
+              <Separator className="bg-slate-600" />
+              
+              <div>
+                <h4 className="text-white font-medium mb-3">Positionen:</h4>
+                <div className="space-y-2">
+                  {selectedQuote.items.map((item, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 bg-slate-700 rounded">
+                      <div>
+                        <p className="text-white font-medium">{item.description}</p>
+                        <p className="text-slate-400 text-sm">
+                          {item.quantity} {item.unit} × €{item.unit_price.toFixed(2)}
+                        </p>
+                      </div>
+                      <p className="text-white font-medium">
+                        €{item.total_price.toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <Separator className="bg-slate-600" />
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-slate-300">
+                  <span>Zwischensumme:</span>
+                  <span>€{selectedQuote.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-slate-300">
+                  <span>MwSt. (19%):</span>
+                  <span>€{selectedQuote.tax_amount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-white font-bold text-lg">
+                  <span>Gesamtsumme:</span>
+                  <span>€{selectedQuote.total_amount.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Print Quote Dialog */}
+      {selectedQuote && showPrintDialog && (
+        <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
+          <DialogContent className="bg-slate-800 border-slate-700 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">Angebot drucken</DialogTitle>
+            </DialogHeader>
+            <PrintQuote 
+              quote={selectedQuote}
+              companyData={companyData}
+              customer={customers.find(c => c.id === selectedQuote.customer_id)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+// Company Page Component
 const CompanyPage = () => {
   const [companyData, setCompanyData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
