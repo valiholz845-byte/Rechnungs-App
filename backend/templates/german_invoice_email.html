@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechnung {{ invoice.invoice_number }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .email-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 3px solid #2c5aa0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-info {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .invoice-title {
+            color: #2c5aa0;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 30px 0 20px 0;
+        }
+        
+        .invoice-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .invoice-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .invoice-details td {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .invoice-details td:first-child {
+            font-weight: bold;
+            width: 200px;
+        }
+        
+        .customer-section {
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #f0f4f8;
+            border-left: 4px solid #2c5aa0;
+        }
+        
+        .amount-highlight {
+            background-color: #e8f2ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .total-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        .payment-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="company-info">
+                <strong>{{ company.company_name }}</strong><br>
+                {{ company.address | replace('\n', '<br>') | safe }}<br>
+                {% if company.phone %}Tel: {{ company.phone }}<br>{% endif %}
+                {% if company.email %}E-Mail: {{ company.email }}<br>{% endif %}
+                {% if company.website %}Web: {{ company.website }}{% endif %}
+            </div>
+        </div>
+
+        <h1 class="invoice-title">Neue Rechnung erhalten</h1>
+
+        <p>Sehr geehrte Damen und Herren,</p>
+
+        <p>anbei erhalten Sie Ihre Rechnung für die von uns erbrachten Leistungen. 
+        Wir bedanken uns für Ihr Vertrauen und die angenehme Zusammenarbeit.</p>
+
+        <div class="invoice-details">
+            <table>
+                <tr>
+                    <td>Rechnungsnummer:</td>
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Rechnungsdatum:</td>
+                    <td>{{ invoice.invoice_date.strftime('%d.%m.%Y') }}</td>
+                </tr>
+                <tr>
+                    <td>Fälligkeitsdatum:</td>
+                    <td><strong>{{ invoice.due_date.strftime('%d.%m.%Y') }}</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="customer-section">
+            <h3>Rechnungsadresse:</h3>
+            <p>
+                {{ customer.name }}<br>
+                {{ customer.address | replace('\n', '<br>') | safe }}
+            </p>
+        </div>
+
+        <div class="amount-highlight">
+            <p>Rechnungsbetrag:</p>
+            <div class="total-amount">€{{ "%.2f"|format(invoice.total_amount) }}</div>
+            <p style="margin: 10px 0 0 0; font-size: 14px;">
+                (inkl. 19% MwSt.)
+            </p>
+        </div>
+
+        <div class="payment-info">
+            <h3>💡 Zahlungshinweise:</h3>
+            <p><strong>Bitte überweisen Sie den Rechnungsbetrag bis zum {{ invoice.due_date.strftime('%d.%m.%Y') }} 
+            auf unser Geschäftskonto.</strong></p>
+            
+            {% if company.iban %}
+            <p>
+                <strong>Bankverbindung:</strong><br>
+                {{ company.bank_name }}<br>
+                IBAN: {{ company.iban }}<br>
+                BIC: {{ company.bic }}
+            </p>
+            {% endif %}
+            
+            <p><strong>Verwendungszweck:</strong> {{ invoice.invoice_number }}</p>
+        </div>
+
+        <p>Bei Rückfragen zu dieser Rechnung stehen wir Ihnen gerne zur Verfügung. 
+        Sie erreichen uns telefonisch unter {{ company.phone }} oder per E-Mail an {{ company.email }}.</p>
+
+        <p>Mit freundlichen Grüßen<br>
+        <strong>{{ company.company_name }}</strong></p>
+
+        <div class="footer">
+            <p>
+                <strong>{{ company.company_name }}</strong><br>
+                {% if company.tax_number %}Steuernummer: {{ company.tax_number }}<br>{% endif %}
+                
+                Diese E-Mail wurde automatisch generiert. Die Rechnung finden Sie im Anhang.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
