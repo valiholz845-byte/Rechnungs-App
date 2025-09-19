@@ -155,7 +155,135 @@ const Navigation = () => {
   );
 };
 
-// Dashboard Component
+// Quick ToDo Form Component
+const QuickTodoForm = ({ onSuccess }) => {
+  const [customers, setCustomers] = useState([]);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    customer_id: '',
+    due_date: new Date().toISOString().split('T')[0],
+    due_time: '09:00'
+  });
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const todoData = {
+        title: formData.title,
+        description: formData.description || null,
+        customer_id: formData.customer_id || null,
+        due_date: formData.due_date,
+        due_time: formData.due_time
+      };
+
+      await axios.post(`${API}/todos`, todoData);
+      toast.success('ToDo erfolgreich erstellt! Erinnerung wird gesendet.');
+      onSuccess();
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        customer_id: '',
+        due_date: new Date().toISOString().split('T')[0],
+        due_time: '09:00'
+      });
+    } catch (error) {
+      console.error('Error creating ToDo:', error);
+      toast.error('Fehler beim Erstellen des ToDos');
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label className="text-slate-200">Aufgabe *</Label>
+        <Input
+          value={formData.title}
+          onChange={(e) => handleChange('title', e.target.value)}
+          className="bg-slate-700 border-slate-600 text-white"
+          placeholder="z.B. Rasen mähen, Kunde anrufen..."
+          required
+        />
+      </div>
+      
+      <div>
+        <Label className="text-slate-200">Beschreibung</Label>
+        <Textarea
+          value={formData.description}
+          onChange={(e) => handleChange('description', e.target.value)}
+          className="bg-slate-700 border-slate-600 text-white"
+          placeholder="Zusätzliche Details..."
+          rows={3}
+        />
+      </div>
+
+      <div>
+        <Label className="text-slate-200">Kunde (optional)</Label>
+        <Select value={formData.customer_id} onValueChange={(value) => handleChange('customer_id', value)}>
+          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+            <SelectValue placeholder="Kunde auswählen (optional)" />
+          </SelectTrigger>
+          <SelectContent className="z-[1100]">
+            <SelectItem value="">Kein Kunde</SelectItem>
+            {customers.map(customer => (
+              <SelectItem key={customer.id} value={customer.id}>
+                {customer.name} - {customer.city}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-slate-200">Datum *</Label>
+          <Input
+            type="date"
+            value={formData.due_date}
+            onChange={(e) => handleChange('due_date', e.target.value)}
+            className="bg-slate-700 border-slate-600 text-white"
+            required
+          />
+        </div>
+        <div>
+          <Label className="text-slate-200">Uhrzeit *</Label>
+          <Input
+            type="time"
+            value={formData.due_time}
+            onChange={(e) => handleChange('due_time', e.target.value)}
+            className="bg-slate-700 border-slate-600 text-white"
+            required
+          />
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+        <Clock className="h-4 w-4 mr-2" />
+        ToDo mit Erinnerung erstellen
+      </Button>
+    </form>
+  );
+};
 const Dashboard = () => {
   const [topCustomers, setTopCustomers] = useState([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
