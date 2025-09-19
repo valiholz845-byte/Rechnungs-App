@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -6,12 +6,24 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 import base64
 from decimal import Decimal
+import aiosmtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+from jinja2 import Environment, FileSystemLoader
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from email.utils import formataddr
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -24,6 +36,22 @@ db = client[os.environ['DB_NAME']]
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# Email configuration
+SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '')
+SENDER_NAME = os.environ.get('SENDER_NAME', 'RechnungsManager')
+
+# Template environment
+template_dir = ROOT_DIR / 'templates'
+template_dir.mkdir(exist_ok=True)
+jinja_env = Environment(
+    loader=FileSystemLoader(template_dir),
+    autoescape=True
+)
 
 # Serve static files for uploads
 uploads_dir = ROOT_DIR / "uploads"
