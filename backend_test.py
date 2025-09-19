@@ -11,6 +11,7 @@ class InvoiceManagerAPITester:
         self.tests_passed = 0
         self.created_customer_id = None
         self.created_invoice_id = None
+        self.created_todo_id = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
