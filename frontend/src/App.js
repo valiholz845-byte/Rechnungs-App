@@ -244,7 +244,7 @@ const QuickTodoForm = ({ onSuccess }) => {
             <SelectValue placeholder="Kunde auswählen (optional)" />
           </SelectTrigger>
           <SelectContent className="z-[1100]">
-            <SelectItem value="">Kein Kunde</SelectItem>
+            <SelectItem value="none">Kein Kunde</SelectItem>
             {customers.map(customer => (
               <SelectItem key={customer.id} value={customer.id}>
                 {customer.name} - {customer.city}
