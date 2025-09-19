@@ -145,71 +145,71 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
+    <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Kunden</CardTitle>
-            <Users className="h-4 w-4 text-blue-400" />
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Kunden</CardTitle>
+            <Users className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total_customers || 0}</div>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.total_customers || 0}</div>
           </CardContent>
         </Card>
         
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Rechnungen</CardTitle>
-            <FileText className="h-4 w-4 text-blue-400" />
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Rechnungen</CardTitle>
+            <FileText className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total_invoices || 0}</div>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.total_invoices || 0}</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card className="bg-slate-800 border-slate-700 col-span-2 md:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Gesamtumsatz</CardTitle>
-            <Euro className="h-4 w-4 text-blue-400" />
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Gesamtumsatz</CardTitle>
+            <Euro className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-lg md:text-2xl font-bold text-white">
               €{(stats.total_revenue || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card className="bg-slate-800 border-slate-700 col-span-2 md:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Offene Rechnungen</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-400" />
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Offene Rechnungen</CardTitle>
+            <Calendar className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.pending_invoices || 0}</div>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.pending_invoices || 0}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Top 5 Customers and Quick Invoice */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Top 5 Customers and Quick Invoice - Stack on Mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {/* Top 5 Kunden */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Top 5 Kunden</CardTitle>
-            <CardDescription className="text-slate-400">Nach Gesamtumsatz sortiert</CardDescription>
+            <CardTitle className="text-white text-lg md:text-xl">Top 5 Kunden</CardTitle>
+            <CardDescription className="text-slate-400 text-sm">Nach Gesamtumsatz sortiert</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {topCustomers.map((customer, index) => (
-                <div key={customer.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                <div key={customer.id} className="flex items-center justify-between p-3 md:p-4 bg-slate-700 rounded-lg">
+                  <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {index + 1}
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{customer.name}</p>
-                      <div className="flex items-center space-x-4 text-sm text-slate-400">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-white text-sm md:text-base truncate">{customer.name}</p>
+                      <div className="flex flex-col md:flex-row md:items-center md:space-x-4 text-xs md:text-sm text-slate-400">
                         <span className="flex items-center">
                           <MapPin className="h-3 w-3 mr-1" />
                           {customer.postal_code} {customer.city}
@@ -218,8 +218,8 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-white">
+                  <div className="text-right ml-2">
+                    <p className="font-bold text-white text-sm md:text-base">
                       €{customer.total_revenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -232,8 +232,8 @@ const Dashboard = () => {
         {/* Quick Invoice */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Schnell-Rechnung</CardTitle>
-            <CardDescription className="text-slate-400">Neue Rechnung erstellen</CardDescription>
+            <CardTitle className="text-white text-lg md:text-xl">Schnell-Rechnung</CardTitle>
+            <CardDescription className="text-slate-400 text-sm">Neue Rechnung erstellen</CardDescription>
           </CardHeader>
           <CardContent>
             <Dialog open={showInvoiceDialog} onOpenChange={setShowInvoiceDialog}>
@@ -243,7 +243,7 @@ const Dashboard = () => {
                   Neue Rechnung erstellen
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto" style={{zIndex: 1000}}>
+              <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto mx-4" style={{zIndex: 1000}}>
                 <DialogHeader>
                   <DialogTitle className="text-white">Neue Rechnung</DialogTitle>
                   <DialogDescription className="text-slate-400">
@@ -257,7 +257,7 @@ const Dashboard = () => {
               </DialogContent>
             </Dialog>
             
-            <div className="mt-6 space-y-3">
+            <div className="mt-4 md:mt-6 space-y-3">
               <Link to="/customers">
                 <Button variant="outline" className="w-full border-slate-600 text-slate-200 hover:bg-slate-700">
                   <Users className="h-4 w-4 mr-2" />
@@ -278,23 +278,23 @@ const Dashboard = () => {
       {/* Monthly Revenue Chart */}
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-white">Monatlicher Umsatz</CardTitle>
-          <CardDescription className="text-slate-400">Umsatzentwicklung über Zeit</CardDescription>
+          <CardTitle className="text-white text-lg md:text-xl">Monatlicher Umsatz</CardTitle>
+          <CardDescription className="text-slate-400 text-sm">Umsatzentwicklung über Zeit</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-64 flex items-end justify-between space-x-2">
+          <div className="h-48 md:h-64 flex items-end justify-between space-x-1 md:space-x-2 overflow-x-auto">
             {monthlyRevenue.map((data, index) => {
               const maxRevenue = Math.max(...monthlyRevenue.map(d => d.revenue));
               const height = Math.max((data.revenue / maxRevenue) * 100, 5);
               
               return (
-                <div key={index} className="flex flex-col items-center space-y-2">
+                <div key={index} className="flex flex-col items-center space-y-2 min-w-[30px] md:min-w-[40px]">
                   <div 
-                    className="bg-blue-500 rounded-t transition-all duration-500 hover:bg-blue-400 min-w-[40px]"
+                    className="bg-blue-500 rounded-t transition-all duration-500 hover:bg-blue-400 w-full"
                     style={{ height: `${height}%` }}
                     title={`€${data.revenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
                   />
-                  <span className="text-xs text-slate-400 transform -rotate-45">{data.month}</span>
+                  <span className="text-xs text-slate-400 transform -rotate-45 whitespace-nowrap">{data.month}</span>
                 </div>
               );
             })}
