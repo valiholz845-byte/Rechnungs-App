@@ -533,6 +533,15 @@ class InvoiceManagerAPITester:
         print("CLEANING UP TEST DATA")
         print("="*50)
         
+        # Delete created todo
+        if self.created_todo_id:
+            self.run_test(
+                "Delete Test ToDo",
+                "DELETE",
+                f"todos/{self.created_todo_id}",
+                200
+            )
+        
         # Delete created customer (this should also clean up related data)
         if self.created_customer_id:
             self.run_test(
