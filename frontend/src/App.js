@@ -336,7 +336,7 @@ const InvoiceForm = ({ onSuccess }) => {
             <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
               <SelectValue placeholder="Kunde auswählen" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[1100]">
               {customers.map(customer => (
                 <SelectItem key={customer.id} value={customer.id}>
                   {customer.name} - {customer.city}
