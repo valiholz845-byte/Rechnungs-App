@@ -186,7 +186,7 @@ const QuickTodoForm = ({ onSuccess }) => {
       const todoData = {
         title: formData.title,
         description: formData.description || null,
-        customer_id: formData.customer_id || null,
+        customer_id: formData.customer_id === "none" ? null : formData.customer_id || null,
         due_date: formData.due_date,
         due_time: formData.due_time
       };
