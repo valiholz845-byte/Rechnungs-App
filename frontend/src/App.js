@@ -391,7 +391,7 @@ const InvoiceForm = ({ onSuccess }) => {
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[1100]">
                   <SelectItem value="hours">Stunden</SelectItem>
                   <SelectItem value="pieces">Stück</SelectItem>
                   <SelectItem value="kg">kg</SelectItem>
