@@ -532,6 +532,21 @@ async def update_invoice_status(invoice_id: str, status: dict):
         raise HTTPException(status_code=404, detail="Invoice not found")
     return {"message": "Status updated successfully"}
 
+@api_router.post("/invoices/{invoice_id}/send-email")
+async def send_invoice_email(invoice_id: str, background_tasks: BackgroundTasks):
+    """Manually send invoice email"""
+    invoice = await db.invoices.find_one({"id": invoice_id})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    if not SMTP_USERNAME or not SMTP_PASSWORD:
+        raise HTTPException(status_code=500, detail="Email service not configured")
+    
+    # Add background task for email sending
+    background_tasks.add_task(send_invoice_email_task, invoice_id)
+    
+    return {"message": "Email send task scheduled successfully"}
+
 # Dashboard endpoints
 @api_router.get("/dashboard/top-customers")
 async def get_top_customers():
