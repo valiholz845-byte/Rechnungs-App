@@ -31,7 +31,12 @@ import {
   Eye,
   Printer,
   Send,
-  Menu
+  Menu,
+  CheckSquare,
+  Clock,
+  Bell,
+  User,
+  CalendarDays
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
