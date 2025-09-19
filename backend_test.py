@@ -569,7 +569,10 @@ class InvoiceManagerAPITester:
         self.test_customer_crud()
         self.test_company_data()
         self.test_invoice_operations()
+        self.test_todo_operations()
         self.test_dashboard_endpoints()
+        self.test_todo_reminder_functionality()
+        self.test_email_functionality()
         self.test_error_handling()
         
         # Cleanup
