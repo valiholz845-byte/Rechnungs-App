@@ -754,7 +754,8 @@ const InvoiceForm = ({ onSuccess }) => {
         })),
         invoice_date: invoiceDate,
         due_date: dueDate,
-        notes: notes
+        notes: notes,
+        apply_tax: applyTax
       };
 
       await axios.post(`${API}/invoices`, invoiceData);
