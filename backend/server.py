@@ -803,7 +803,9 @@ async def get_dashboard_stats():
         "total_customers": total_customers,
         "total_invoices": total_invoices,
         "total_revenue": total_revenue,
-        "pending_invoices": pending_invoices
+        "pending_invoices": pending_invoices,
+        "total_todos": await db.todos.count_documents({}),
+        "pending_todos": await db.todos.count_documents({"status": "pending"})
     }
 
 # Include router
