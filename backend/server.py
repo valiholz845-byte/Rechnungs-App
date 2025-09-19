@@ -120,6 +120,34 @@ class InvoiceItemCreate(BaseModel):
     quantity: float
     unit_price: float
 
+class ToDo(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: Optional[str] = None
+    customer_id: Optional[str] = None
+    customer_name: Optional[str] = None
+    due_date: datetime
+    due_time: str  # Format: "HH:MM"
+    status: str = "pending"  # pending, completed, cancelled
+    reminder_sent: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: Optional[datetime] = None
+
+class ToDoCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    customer_id: Optional[str] = None
+    due_date: str  # ISO date string
+    due_time: str  # Format: "HH:MM"
+
+class ToDoUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    customer_id: Optional[str] = None
+    due_date: Optional[str] = None
+    due_time: Optional[str] = None
+    status: Optional[str] = None
+
 class Invoice(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     invoice_number: str
