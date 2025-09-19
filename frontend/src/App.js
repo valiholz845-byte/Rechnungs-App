@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./components/ui/dialog";
 import { Badge } from "./components/ui/badge";
 import { Separator } from "./components/ui/separator";
+import { Switch } from "./components/ui/switch";
 import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 import { 
