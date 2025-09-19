@@ -307,6 +307,188 @@ class InvoiceManagerAPITester:
                 if 'month' in data_point and 'revenue' in data_point:
                     print(f"   {data_point['month']}: €{data_point['revenue']:.2f}")
 
+    def test_todo_operations(self):
+        """Test ToDo CRUD operations"""
+        print("\n" + "="*50)
+        print("TESTING TODO CRUD OPERATIONS")
+        print("="*50)
+        
+        # Test GET todos (empty initially)
+        success, todos = self.run_test(
+            "Get All ToDos",
+            "GET",
+            "todos",
+            200
+        )
+        
+        # Test GET pending todos
+        success, pending_todos = self.run_test(
+            "Get Pending ToDos",
+            "GET",
+            "todos",
+            200,
+            params={"status": "pending"}
+        )
+        
+        # Test CREATE todo without customer
+        today = datetime.now()
+        tomorrow = today + timedelta(days=1)
+        
+        todo_data = {
+            "title": "Test ToDo ohne Kunde",
+            "description": "Dies ist ein Test-ToDo ohne zugewiesenen Kunden",
+            "customer_id": None,
+            "due_date": tomorrow.date().isoformat(),
+            "due_time": "14:30"
+        }
+        
+        success, created_todo = self.run_test(
+            "Create ToDo (No Customer)",
+            "POST",
+            "todos",
+            200,
+            data=todo_data
+        )
+        
+        if success and 'id' in created_todo:
+            self.created_todo_id = created_todo['id']
+            print(f"   Created ToDo ID: {self.created_todo_id}")
+            
+            # Verify ToDo data
+            if 'title' in created_todo:
+                print(f"   Title: {created_todo['title']}")
+                print(f"   Due Date: {created_todo['due_date']}")
+                print(f"   Due Time: {created_todo['due_time']}")
+                print(f"   Status: {created_todo['status']}")
+                print(f"   Customer: {created_todo.get('customer_name', 'None')}")
+        
+        # Test CREATE todo with customer (if customer exists)
+        if self.created_customer_id:
+            todo_with_customer_data = {
+                "title": "Test ToDo mit Kunde",
+                "description": "Dies ist ein Test-ToDo mit zugewiesenem Kunden",
+                "customer_id": self.created_customer_id,
+                "due_date": tomorrow.date().isoformat(),
+                "due_time": "16:00"
+            }
+            
+            success, created_todo_with_customer = self.run_test(
+                "Create ToDo (With Customer)",
+                "POST",
+                "todos",
+                200,
+                data=todo_with_customer_data
+            )
+            
+            if success and 'customer_name' in created_todo_with_customer:
+                print(f"   Customer assigned: {created_todo_with_customer['customer_name']}")
+        
+        # Test GET specific todo
+        if self.created_todo_id:
+            self.run_test(
+                "Get Specific ToDo",
+                "GET",
+                f"todos/{self.created_todo_id}",
+                200
+            )
+            
+            # Test UPDATE todo
+            update_data = {
+                "title": "Updated Test ToDo",
+                "description": "Updated description",
+                "due_time": "15:00"
+            }
+            
+            success, updated_todo = self.run_test(
+                "Update ToDo",
+                "PUT",
+                f"todos/{self.created_todo_id}",
+                200,
+                data=update_data
+            )
+            
+            if success:
+                print(f"   Updated title: {updated_todo.get('title', 'N/A')}")
+                print(f"   Updated time: {updated_todo.get('due_time', 'N/A')}")
+            
+            # Test mark todo as completed
+            completion_data = {
+                "status": "completed"
+            }
+            
+            success, completed_todo = self.run_test(
+                "Mark ToDo as Completed",
+                "PUT",
+                f"todos/{self.created_todo_id}",
+                200,
+                data=completion_data
+            )
+            
+            if success:
+                print(f"   Status: {completed_todo.get('status', 'N/A')}")
+                if 'completed_at' in completed_todo:
+                    print(f"   Completed at: {completed_todo['completed_at']}")
+        
+        # Test GET todos again (should show created todos)
+        success, all_todos = self.run_test(
+            "Get All ToDos (After Create)",
+            "GET",
+            "todos",
+            200
+        )
+        
+        if success and isinstance(all_todos, list):
+            print(f"   Total ToDos: {len(all_todos)}")
+
+    def test_todo_reminder_functionality(self):
+        """Test ToDo reminder functionality"""
+        print("\n" + "="*50)
+        print("TESTING TODO REMINDER FUNCTIONALITY")
+        print("="*50)
+        
+        # Test manual reminder send (if todo exists)
+        if self.created_todo_id:
+            success, reminder_response = self.run_test(
+                "Send Manual ToDo Reminder",
+                "POST",
+                f"todos/{self.created_todo_id}/send-reminder",
+                200
+            )
+            
+            if success:
+                print(f"   Reminder response: {reminder_response}")
+        
+        # Test due todos check endpoint
+        success, due_check_response = self.run_test(
+            "Check Due ToDos",
+            "GET",
+            "todos/due/check",
+            200
+        )
+        
+        if success:
+            print(f"   Due check response: {due_check_response}")
+
+    def test_email_functionality(self):
+        """Test email functionality (invoice and todo reminders)"""
+        print("\n" + "="*50)
+        print("TESTING EMAIL FUNCTIONALITY")
+        print("="*50)
+        
+        # Test manual invoice email send (if invoice exists)
+        if self.created_invoice_id:
+            success, email_response = self.run_test(
+                "Send Invoice Email",
+                "POST",
+                f"invoices/{self.created_invoice_id}/send-email",
+                200
+            )
+            
+            if success:
+                print(f"   Email response: {email_response}")
+            else:
+                print("   Note: Email might not be configured, which is expected in test environment")
+
     def test_error_handling(self):
         """Test error handling"""
         print("\n" + "="*50)
