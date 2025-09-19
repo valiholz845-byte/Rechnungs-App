@@ -45,6 +45,7 @@ const API = `${BACKEND_URL}/api`;
 // Navigation Component
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showTodoDialog, setShowTodoDialog] = useState(false);
 
   return (
     <nav className="bg-slate-900 border-b border-slate-800 px-4 py-4">
@@ -68,6 +69,25 @@ const Navigation = () => {
           <Link to="/company" className="text-slate-300 hover:text-white transition-colors">
             Firmendaten
           </Link>
+          
+          {/* Quick ToDo Button */}
+          <Dialog open={showTodoDialog} onOpenChange={setShowTodoDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white">
+                <CheckSquare className="h-4 w-4 mr-2" />
+                ToDo
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-slate-800 border-slate-700 max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="text-white">Schnell-ToDo erstellen</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Erstelle eine neue Aufgabe mit Erinnerung
+                </DialogDescription>
+              </DialogHeader>
+              <QuickTodoForm onSuccess={() => setShowTodoDialog(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Mobile Hamburger Menu */}
@@ -117,6 +137,17 @@ const Navigation = () => {
             >
               🏢 Firmendaten
             </Link>
+            <Button 
+              variant="outline" 
+              className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white mx-2 mt-2"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setShowTodoDialog(true);
+              }}
+            >
+              <CheckSquare className="h-4 w-4 mr-2" />
+              ToDo erstellen
+            </Button>
           </div>
         </div>
       )}
