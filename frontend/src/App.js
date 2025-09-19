@@ -278,29 +278,76 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Monthly Revenue Chart */}
+      {/* Enhanced Monthly Revenue Chart */}
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white text-lg md:text-xl">Monatlicher Umsatz</CardTitle>
-          <CardDescription className="text-slate-400 text-sm">Umsatzentwicklung über Zeit</CardDescription>
+          <CardDescription className="text-slate-400 text-sm">Umsatzentwicklung über Zeit - wischen für weitere Monate</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-48 md:h-64 flex items-end justify-between space-x-1 md:space-x-2 overflow-x-auto">
-            {monthlyRevenue.map((data, index) => {
-              const maxRevenue = Math.max(...monthlyRevenue.map(d => d.revenue));
-              const height = Math.max((data.revenue / maxRevenue) * 100, 5);
-              
-              return (
-                <div key={index} className="flex flex-col items-center space-y-2 min-w-[30px] md:min-w-[40px]">
-                  <div 
-                    className="bg-blue-500 rounded-t transition-all duration-500 hover:bg-blue-400 w-full"
-                    style={{ height: `${height}%` }}
-                    title={`€${data.revenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
-                  />
-                  <span className="text-xs text-slate-400 transform -rotate-45 whitespace-nowrap">{data.month}</span>
-                </div>
-              );
-            })}
+          <div className="h-48 md:h-64 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+            <div className="flex items-end justify-start space-x-2 md:space-x-3 min-w-max pb-4">
+              {/* Generate months for multiple years */}
+              {(() => {
+                const months = [];
+                const currentYear = new Date().getFullYear();
+                const startYear = 2025;
+                const endYear = currentYear + 2; // Show current year + 2 future years
+                
+                const monthNames = [
+                  "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
+                  "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"
+                ];
+
+                // Create data structure for all months across years
+                for (let year = startYear; year <= endYear; year++) {
+                  for (let month = 0; month < 12; month++) {
+                    const monthKey = `${monthNames[month]} ${year}`;
+                    
+                    // Find revenue data for this month/year
+                    const revenueData = monthlyRevenue.find(data => data.month === monthKey);
+                    const revenue = revenueData ? revenueData.revenue : 0;
+                    
+                    months.push({
+                      key: monthKey,
+                      month: monthNames[month],
+                      year: year,
+                      revenue: revenue
+                    });
+                  }
+                }
+
+                const maxRevenue = Math.max(...months.map(d => d.revenue), 1);
+                
+                return months.map((data, index) => {
+                  const height = data.revenue > 0 ? Math.max((data.revenue / maxRevenue) * 100, 5) : 5;
+                  const isCurrentMonth = data.month === monthNames[new Date().getMonth()] && data.year === new Date().getFullYear();
+                  
+                  return (
+                    <div key={index} className="flex flex-col items-center space-y-2 min-w-[45px] md:min-w-[55px]">
+                      <div 
+                        className={`rounded-t transition-all duration-500 hover:opacity-80 w-full cursor-pointer ${
+                          data.revenue > 0 
+                            ? isCurrentMonth 
+                              ? 'bg-blue-400 shadow-lg' 
+                              : 'bg-blue-500 hover:bg-blue-400'
+                            : 'bg-slate-600'
+                        }`}
+                        style={{ height: `${height}%` }}
+                        title={`${data.key}: €${data.revenue.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
+                      />
+                      <div className="text-center">
+                        <span className="text-xs text-slate-400 font-medium block">{data.month}</span>
+                        <span className="text-xs text-slate-500 block">{data.year}</span>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+          <div className="mt-4 text-center">
+            <p className="text-xs text-slate-500">← Wischen Sie nach links/rechts für weitere Monate →</p>
           </div>
         </CardContent>
       </Card>
