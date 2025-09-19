@@ -343,9 +343,12 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8">
-      {/* Stats Cards with ToDos */}
+      {/* Stats Cards with ToDos - Now Clickable */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
-        <Card className="bg-slate-800 border-slate-700">
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/customers')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Kunden</CardTitle>
             <Users className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
@@ -355,7 +358,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/invoices')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Rechnungen</CardTitle>
             <FileText className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
@@ -365,7 +371,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/todos')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">ToDos</CardTitle>
             <CheckSquare className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
@@ -375,7 +384,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/todos?filter=pending')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Offene ToDos</CardTitle>
             <Clock className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
@@ -385,7 +397,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700 col-span-2 md:col-span-1">
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/invoices')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Gesamtumsatz</CardTitle>
             <Euro className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
@@ -397,7 +412,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-slate-800 border-slate-700 col-span-2 md:col-span-1">
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/invoices?filter=pending')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Offene Rechnungen</CardTitle>
             <Calendar className="h-3 w-3 md:h-4 md:w-4 text-blue-400" />
