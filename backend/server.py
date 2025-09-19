@@ -187,6 +187,7 @@ class Quote(BaseModel):
     valid_until: datetime
     status: str = "draft"  # draft, sent, accepted, rejected, converted
     notes: Optional[str] = None
+    apply_tax: bool = True  # New field to control tax application
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     converted_to_invoice_id: Optional[str] = None
 
@@ -196,6 +197,7 @@ class QuoteCreate(BaseModel):
     quote_date: str
     valid_until: str
     notes: Optional[str] = None
+    apply_tax: bool = True  # New field
 
 # Email Service Class
 class EmailService:
