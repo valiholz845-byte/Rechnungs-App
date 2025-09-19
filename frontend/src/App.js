@@ -478,9 +478,9 @@ function App() {
         <Navigation />
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/customers" element={<div className="p-6 text-white">Kunden-Verwaltung (Wird implementiert)</div>} />
-          <Route path="/invoices" element={<div className="p-6 text-white">Rechnungs-Übersicht (Wird implementiert)</div>} />
-          <Route path="/company" element={<div className="p-6 text-white">Firmendaten-Verwaltung (Wird implementiert)</div>} />
+          <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/company" element={<CompanyPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster />
