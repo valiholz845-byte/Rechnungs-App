@@ -236,109 +236,91 @@ class EmailService:
             logger.error(f"Failed to send invoice email: {str(e)}")
             return False
     
-    def generate_invoice_pdf(self, invoice: dict, customer: dict, company: dict) -> io.BytesIO:
-        """Generate PDF for invoice"""
+    async def send_todo_reminder_email(self, todo: dict, customer: dict = None, company: dict = None) -> bool:
+        """Send ToDo reminder email"""
         try:
-            buffer = io.BytesIO()
-            doc = SimpleDocTemplate(buffer, pagesize=A4)
-            styles = getSampleStyleSheet()
-            story = []
+            if not self.username or not self.password:
+                logger.warning("Email credentials not configured, skipping ToDo reminder")
+                return False
             
-            # Company header
-            story.append(Paragraph(f"<b>{company['company_name']}</b>", styles['Title']))
-            story.append(Paragraph(f"{company['address']}<br/>{company['postal_code']} {company['city']}", styles['Normal']))
-            story.append(Spacer(1, 20))
+            # Determine recipient
+            if customer and customer.get("email"):
+                recipient_email = customer["email"]
+                recipient_name = customer["name"]
+            else:
+                # Send to company email as internal reminder
+                recipient_email = company.get("email", self.sender_email)
+                recipient_name = "Team"
             
-            # Invoice title
-            story.append(Paragraph(f"<b>RECHNUNG {invoice['invoice_number']}</b>", styles['Heading1']))
-            story.append(Spacer(1, 12))
+            # Create email content
+            due_date = datetime.fromisoformat(todo["due_date"]).strftime('%d.%m.%Y')
+            due_time = todo["due_time"]
             
-            # Customer info
-            story.append(Paragraph("<b>Rechnungsadresse:</b>", styles['Normal']))
-            story.append(Paragraph(f"{customer['name']}<br/>{customer['address']}<br/>{customer['postal_code']} {customer['city']}", styles['Normal']))
-            story.append(Spacer(1, 20))
+            subject = f"Erinnerung: {todo['title']} - {due_date} um {due_time}"
             
-            # Invoice details
-            invoice_date = datetime.fromisoformat(invoice['invoice_date']).strftime('%d.%m.%Y')
-            due_date = datetime.fromisoformat(invoice['due_date']).strftime('%d.%m.%Y')
-            
-            details_data = [
-                ['Rechnungsdatum:', invoice_date],
-                ['Fälligkeitsdatum:', due_date]
-            ]
-            
-            details_table = Table(details_data, colWidths=[100, 100])
-            details_table.setStyle(TableStyle([
-                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ]))
-            story.append(details_table)
-            story.append(Spacer(1, 20))
-            
-            # Line items
-            headers = ['Pos.', 'Beschreibung', 'Menge', 'Einzelpreis', 'Gesamt']
-            table_data = [headers]
-            
-            for i, item in enumerate(invoice['items'], 1):
-                row = [
-                    str(i),
-                    item['description'],
-                    f"{item['quantity']:.2f}",
-                    f"€{item['unit_price']:.2f}",
-                    f"€{item['total_price']:.2f}"
-                ]
-                table_data.append(row)
-            
-            items_table = Table(table_data, colWidths=[30, 200, 60, 80, 80])
-            items_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
-            story.append(items_table)
-            story.append(Spacer(1, 20))
-            
-            # Totals
-            totals_data = [
-                ['Zwischensumme:', f"€{invoice['subtotal']:.2f}"],
-                ['MwSt. (19%):', f"€{invoice['tax_amount']:.2f}"],
-                ['<b>Gesamtbetrag:</b>', f"<b>€{invoice['total_amount']:.2f}</b>"]
-            ]
-            
-            totals_table = Table(totals_data, colWidths=[300, 100])
-            totals_table.setStyle(TableStyle([
-                ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
-                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('LINEABOVE', (0, -1), (-1, -1), 2, colors.black),
-            ]))
-            story.append(totals_table)
-            
-            # Footer
-            story.append(Spacer(1, 30))
-            footer_text = f"""
-            <b>Zahlungshinweise:</b><br/>
-            Bitte überweisen Sie den Betrag bis zum {due_date}.<br/>
-            Bank: {company.get('bank_name', 'N/A')}<br/>
-            IBAN: {company.get('iban', 'N/A')}<br/>
-            BIC: {company.get('bic', 'N/A')}<br/>
-            Verwendungszweck: {invoice['invoice_number']}
+            html_body = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                    <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h2 style="color: #2c5aa0; margin-bottom: 20px;">🔔 ToDo-Erinnerung</h2>
+                        
+                        <div style="background-color: #e8f2ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                            <h3 style="margin-top: 0; color: #2c5aa0;">{todo['title']}</h3>
+                            {f'<p><strong>Beschreibung:</strong> {todo["description"]}</p>' if todo.get("description") else ''}
+                            <p><strong>Fällig:</strong> {due_date} um {due_time} Uhr</p>
+                            {f'<p><strong>Kunde:</strong> {customer["name"]}</p>' if customer else ''}
+                        </div>
+                        
+                        <p>Diese Erinnerung wurde automatisch vom RechnungsManager gesendet.</p>
+                        
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; text-align: center;">
+                            <p>{company.get("company_name", "RechnungsManager")}<br>
+                            Automatische ToDo-Erinnerung</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
             """
-            story.append(Paragraph(footer_text, styles['Normal']))
             
-            doc.build(story)
-            buffer.seek(0)
-            return buffer
+            text_body = f"""
+            ToDo-Erinnerung: {todo['title']}
+            
+            Fällig: {due_date} um {due_time} Uhr
+            {f'Beschreibung: {todo["description"]}' if todo.get("description") else ''}
+            {f'Kunde: {customer["name"]}' if customer else ''}
+            
+            Diese Erinnerung wurde automatisch vom RechnungsManager gesendet.
+            """
+            
+            # Create email message
+            message = MIMEMultipart()
+            message["From"] = formataddr((self.sender_name, self.sender_email))
+            message["To"] = recipient_email
+            message["Subject"] = subject
+            
+            # Add text and HTML parts
+            text_part = MIMEText(text_body, "plain", "utf-8")
+            html_part = MIMEText(html_body, "html", "utf-8")
+            message.attach(text_part)
+            message.attach(html_part)
+            
+            # Send email
+            async with aiosmtplib.SMTP(
+                hostname=self.smtp_server,
+                port=self.smtp_port,
+                use_tls=True
+            ) as server:
+                await server.login(self.username, self.password)
+                await server.send_message(message)
+            
+            logger.info(f"ToDo reminder email sent to {recipient_email}")
+            return True
             
         except Exception as e:
-            logger.error(f"Failed to generate PDF: {str(e)}")
-            return None
+            logger.error(f"Failed to send ToDo reminder email: {str(e)}")
+            return False
 
 # Initialize email service
 email_service = EmailService()
