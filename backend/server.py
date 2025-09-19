@@ -171,6 +171,30 @@ class InvoiceCreate(BaseModel):
     due_date: str
     notes: Optional[str] = None
 
+class Quote(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    quote_number: str
+    customer_id: str
+    customer_name: str
+    items: List[InvoiceItem]  # Same structure as invoice items
+    subtotal: float
+    tax_rate: float = 19.0  # Default German VAT
+    tax_amount: float
+    total_amount: float
+    quote_date: datetime
+    valid_until: datetime
+    status: str = "draft"  # draft, sent, accepted, rejected, converted
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    converted_to_invoice_id: Optional[str] = None
+
+class QuoteCreate(BaseModel):
+    customer_id: str
+    items: List[InvoiceItemCreate]
+    quote_date: str
+    valid_until: str
+    notes: Optional[str] = None
+
 # Email Service Class
 class EmailService:
     def __init__(self):
