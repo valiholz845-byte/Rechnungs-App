@@ -486,7 +486,7 @@ const Dashboard = () => {
             <CardTitle className="text-white text-lg md:text-xl flex items-center">
               <Bell className="h-5 w-5 mr-2 text-yellow-400" />
               Anstehende ToDos
-            </StatTitle>
+            </CardTitle>
             <CardDescription className="text-slate-400 text-sm">Nächste 5 Aufgaben</CardDescription>
           </CardHeader>
           <CardContent>
