@@ -355,8 +355,8 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8">
-      {/* Stats Cards with ToDos - Now Clickable */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
+      {/* Stats Cards with ToDos and Quotes - Now Clickable */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-6">
         <Card 
           className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
           onClick={() => navigate('/customers')}
@@ -385,14 +385,40 @@ const Dashboard = () => {
         
         <Card 
           className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/quotes')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Angebote</CardTitle>
+            <FileCheck className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.total_quotes || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
           onClick={() => navigate('/todos')}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">ToDos</CardTitle>
-            <CheckSquare className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
+            <CheckSquare className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
             <div className="text-lg md:text-2xl font-bold text-white">{stats.total_todos || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card 
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          onClick={() => navigate('/quotes?filter=pending')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Offene Angebote</CardTitle>
+            <Clock className="h-3 w-3 md:h-4 md:w-4 text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg md:text-2xl font-bold text-white">{stats.pending_quotes || 0}</div>
           </CardContent>
         </Card>
         
@@ -402,7 +428,7 @@ const Dashboard = () => {
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs md:text-sm font-medium text-slate-300">Offene ToDos</CardTitle>
-            <Clock className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
+            <Bell className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
             <div className="text-lg md:text-2xl font-bold text-white">{stats.pending_todos || 0}</div>
@@ -410,7 +436,7 @@ const Dashboard = () => {
         </Card>
         
         <Card 
-          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors col-span-2 md:col-span-1"
           onClick={() => navigate('/invoices')}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -425,7 +451,7 @@ const Dashboard = () => {
         </Card>
         
         <Card 
-          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors"
+          className="bg-slate-800 border-slate-700 cursor-pointer hover:bg-slate-750 transition-colors col-span-2 md:col-span-1"
           onClick={() => navigate('/invoices?filter=pending')}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
