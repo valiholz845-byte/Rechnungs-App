@@ -948,6 +948,141 @@ async def check_due_todos(background_tasks: BackgroundTasks):
     background_tasks.add_task(check_due_todos_task)
     return {"message": "Due ToDo check scheduled"}
 
+# Quote endpoints
+@api_router.post("/quotes", response_model=Quote)
+async def create_quote(quote_data: QuoteCreate, background_tasks: BackgroundTasks):
+    # Get customer info
+    customer = await db.customers.find_one({"id": quote_data.customer_id})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Generate quote number
+    quote_count = await db.quotes.count_documents({}) + 1
+    quote_number = f"ANG-{quote_count:04d}"
+    
+    # Calculate totals
+    items = []
+    subtotal = 0
+    
+    for item_data in quote_data.items:
+        total_price = item_data.quantity * item_data.unit_price
+        item = InvoiceItem(  # Using same structure as invoice items
+            **item_data.dict(),
+            total_price=total_price
+        )
+        items.append(item)
+        subtotal += total_price
+    
+    tax_amount = subtotal * 0.19  # 19% VAT
+    total_amount = subtotal + tax_amount
+    
+    # Parse dates
+    quote_date = datetime.fromisoformat(quote_data.quote_date)
+    valid_until = datetime.fromisoformat(quote_data.valid_until)
+    
+    quote = Quote(
+        quote_number=quote_number,
+        customer_id=quote_data.customer_id,
+        customer_name=customer["name"],
+        items=items,
+        subtotal=subtotal,
+        tax_amount=tax_amount,
+        total_amount=total_amount,
+        quote_date=quote_date,
+        valid_until=valid_until,
+        notes=quote_data.notes,
+        status="draft"
+    )
+    
+    quote_data_dict = prepare_for_mongo(quote.dict())
+    await db.quotes.insert_one(quote_data_dict)
+    
+    logger.info(f"Quote {quote_number} created for customer {customer['name']}")
+    
+    return quote
+
+@api_router.get("/quotes", response_model=List[Quote])
+async def get_quotes():
+    quotes = await db.quotes.find().sort("created_at", -1).to_list(length=None)
+    return [Quote(**parse_from_mongo(quote)) for quote in quotes]
+
+@api_router.get("/quotes/{quote_id}", response_model=Quote)
+async def get_quote(quote_id: str):
+    quote = await db.quotes.find_one({"id": quote_id})
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    return Quote(**parse_from_mongo(quote))
+
+@api_router.put("/quotes/{quote_id}/status")
+async def update_quote_status(quote_id: str, status: dict):
+    result = await db.quotes.update_one(
+        {"id": quote_id}, 
+        {"$set": {"status": status["status"]}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    return {"message": "Quote status updated successfully"}
+
+@api_router.post("/quotes/{quote_id}/convert-to-invoice")
+async def convert_quote_to_invoice(quote_id: str, background_tasks: BackgroundTasks):
+    """Convert accepted quote to invoice"""
+    quote = await db.quotes.find_one({"id": quote_id})
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    
+    if quote.get("status") != "accepted":
+        raise HTTPException(status_code=400, detail="Quote must be accepted before conversion")
+    
+    # Generate invoice number
+    invoice_count = await db.invoices.count_documents({}) + 1
+    invoice_number = f"INV-{invoice_count:04d}"
+    
+    # Create invoice from quote
+    invoice_data = {
+        "id": str(uuid.uuid4()),
+        "invoice_number": invoice_number,
+        "customer_id": quote["customer_id"],
+        "customer_name": quote["customer_name"],
+        "items": quote["items"],
+        "subtotal": quote["subtotal"],
+        "tax_rate": quote["tax_rate"],
+        "tax_amount": quote["tax_amount"],
+        "total_amount": quote["total_amount"],
+        "invoice_date": datetime.now(timezone.utc).isoformat(),
+        "due_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+        "status": "draft",
+        "notes": f"Basierend auf {quote['quote_number']}" + (f" - {quote.get('notes', '')}" if quote.get('notes') else ""),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Insert invoice
+    await db.invoices.insert_one(invoice_data)
+    
+    # Update quote status and link to invoice
+    await db.quotes.update_one(
+        {"id": quote_id},
+        {"$set": {"status": "converted", "converted_to_invoice_id": invoice_data["id"]}}
+    )
+    
+    # Add background task for email sending if configured
+    if SMTP_USERNAME and SMTP_PASSWORD:
+        background_tasks.add_task(send_invoice_email_task, invoice_data["id"])
+    
+    logger.info(f"Quote {quote['quote_number']} converted to invoice {invoice_number}")
+    
+    return {
+        "message": "Quote successfully converted to invoice",
+        "invoice_id": invoice_data["id"],
+        "invoice_number": invoice_number
+    }
+
+@api_router.delete("/quotes/{quote_id}")
+async def delete_quote(quote_id: str):
+    result = await db.quotes.delete_one({"id": quote_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    return {"message": "Quote deleted successfully"}
+
 # Include router
 app.include_router(api_router)
 
