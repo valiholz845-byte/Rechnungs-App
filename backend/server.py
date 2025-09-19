@@ -682,7 +682,7 @@ async def create_invoice(invoice_data: InvoiceCreate, background_tasks: Backgrou
         items.append(item)
         subtotal += total_price
     
-    tax_amount = subtotal * 0.19  # 19% VAT
+    tax_amount = subtotal * 0.19 if invoice_data.apply_tax else 0  # Conditional VAT
     total_amount = subtotal + tax_amount
     
     # Parse dates
@@ -700,6 +700,7 @@ async def create_invoice(invoice_data: InvoiceCreate, background_tasks: Backgrou
         invoice_date=invoice_date,
         due_date=due_date,
         notes=invoice_data.notes,
+        apply_tax=invoice_data.apply_tax,
         status="draft"  # Start as draft, will be updated to "sent" after email
     )
     
