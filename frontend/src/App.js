@@ -1044,7 +1044,131 @@ const CompanyPage = () => {
   );
 };
 
-// Company Form Component
+// Print Invoice Component
+const PrintInvoice = ({ invoice, companyData, customer }) => {
+  const printInvoice = () => {
+    window.print();
+  };
+
+  if (!invoice || !companyData || !customer) return null;
+
+  return (
+    <div className="print-container">
+      <div className="no-print mb-4 flex justify-end">
+        <Button onClick={printInvoice} className="bg-blue-600 hover:bg-blue-700">
+          <Printer className="h-4 w-4 mr-2" />
+          Drucken
+        </Button>
+      </div>
+      
+      <div className="print-friendly bg-white text-black p-8 rounded-lg shadow-lg">
+        {/* Header */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">{companyData.company_name}</h1>
+            <div className="text-sm text-gray-600">
+              <p>{companyData.address}</p>
+              <p>{companyData.postal_code} {companyData.city}</p>
+              <p>Tel: {companyData.phone}</p>
+              <p>E-Mail: {companyData.email}</p>
+              {companyData.website && <p>Web: {companyData.website}</p>}
+            </div>
+          </div>
+          <div className="text-right">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">RECHNUNG</h2>
+            <p className="text-lg font-semibold">{invoice.invoice_number}</p>
+            <p className="text-sm text-gray-600">
+              Datum: {new Date(invoice.invoice_date).toLocaleDateString('de-DE')}
+            </p>
+            <p className="text-sm text-gray-600">
+              Fällig: {new Date(invoice.due_date).toLocaleDateString('de-DE')}
+            </p>
+          </div>
+        </div>
+
+        {/* Customer Info */}
+        <div className="mb-8">
+          <h3 className="font-semibold text-gray-900 mb-2">Rechnungsadresse:</h3>
+          <div className="text-sm text-gray-700">
+            <p className="font-medium">{customer.name}</p>
+            <p>{customer.address}</p>
+            <p>{customer.postal_code} {customer.city}</p>
+            <p>{customer.email}</p>
+          </div>
+        </div>
+
+        {/* Invoice Items */}
+        <div className="mb-8">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b-2 border-gray-300">
+                <th className="text-left py-2 font-semibold">Beschreibung</th>
+                <th className="text-center py-2 font-semibold">Menge</th>
+                <th className="text-center py-2 font-semibold">Einheit</th>
+                <th className="text-right py-2 font-semibold">Einzelpreis</th>
+                <th className="text-right py-2 font-semibold">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoice.items.map((item, index) => (
+                <tr key={index} className="border-b border-gray-200">
+                  <td className="py-2">{item.description}</td>
+                  <td className="text-center py-2">{item.quantity}</td>
+                  <td className="text-center py-2">{item.unit}</td>
+                  <td className="text-right py-2">€{item.unit_price.toFixed(2)}</td>
+                  <td className="text-right py-2">€{item.total_price.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Totals */}
+        <div className="flex justify-end mb-8">
+          <div className="w-64">
+            <div className="flex justify-between py-1">
+              <span>Zwischensumme:</span>
+              <span>€{invoice.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between py-1">
+              <span>MwSt. (19%):</span>
+              <span>€{invoice.tax_amount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between py-2 border-t-2 border-gray-300 font-bold text-lg">
+              <span>Gesamtsumme:</span>
+              <span>€{invoice.total_amount.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Company Details */}
+        <div className="border-t border-gray-300 pt-4 text-xs text-gray-600">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p><strong>Steuernummer:</strong> {companyData.tax_number}</p>
+            </div>
+            <div>
+              <p><strong>Bank:</strong> {companyData.bank_name}</p>
+              <p><strong>IBAN:</strong> {companyData.iban}</p>
+              <p><strong>BIC:</strong> {companyData.bic}</p>
+            </div>
+            <div>
+              <p>Zahlbar innerhalb von 30 Tagen ohne Abzug.</p>
+              <p>Vielen Dank für Ihr Vertrauen!</p>
+            </div>
+          </div>
+        </div>
+
+        {invoice.notes && (
+          <div className="mt-6 pt-4 border-t border-gray-300">
+            <h4 className="font-semibold text-gray-900 mb-2">Notizen:</h4>
+            <p className="text-sm text-gray-700">{invoice.notes}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 const CompanyForm = ({ company, onSuccess }) => {
   const [formData, setFormData] = useState({
     company_name: company?.company_name || '',
