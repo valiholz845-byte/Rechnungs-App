@@ -199,7 +199,7 @@ const QuickTodoForm = ({ onSuccess }) => {
       setFormData({
         title: '',
         description: '',
-        customer_id: '',
+        customer_id: 'none',
         due_date: new Date().toISOString().split('T')[0],
         due_time: '09:00'
       });
