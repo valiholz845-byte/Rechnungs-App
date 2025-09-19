@@ -454,7 +454,7 @@ async def get_company():
 
 # Invoice endpoints
 @api_router.post("/invoices", response_model=Invoice)
-async def create_invoice(invoice_data: InvoiceCreate):
+async def create_invoice(invoice_data: InvoiceCreate, background_tasks: BackgroundTasks):
     # Get customer info
     customer = await db.customers.find_one({"id": invoice_data.customer_id})
     if not customer:
@@ -494,11 +494,19 @@ async def create_invoice(invoice_data: InvoiceCreate):
         total_amount=total_amount,
         invoice_date=invoice_date,
         due_date=due_date,
-        notes=invoice_data.notes
+        notes=invoice_data.notes,
+        status="draft"  # Start as draft, will be updated to "sent" after email
     )
     
     invoice_data_dict = prepare_for_mongo(invoice.dict())
     await db.invoices.insert_one(invoice_data_dict)
+    
+    # Add background task for email sending
+    if SMTP_USERNAME and SMTP_PASSWORD:
+        background_tasks.add_task(send_invoice_email_task, invoice.id)
+        logger.info(f"Invoice {invoice_number} created, email task scheduled")
+    else:
+        logger.warning(f"Invoice {invoice_number} created, but email not configured")
     
     return invoice
 
