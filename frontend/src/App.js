@@ -1094,7 +1094,7 @@ const CompanyPage = () => {
   );
 };
 
-// Print Invoice Component
+// Professional German Invoice Print Component
 const PrintInvoice = ({ invoice, companyData, customer }) => {
   const printInvoice = () => {
     window.print();
@@ -1111,107 +1111,175 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
         </Button>
       </div>
       
-      <div className="print-friendly bg-white text-black p-8 rounded-lg shadow-lg">
-        {/* Header */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">{companyData.company_name}</h1>
-            <div className="text-sm text-gray-600">
-              <p>{companyData.address}</p>
-              <p>{companyData.postal_code} {companyData.city}</p>
-              <p>Tel: {companyData.phone}</p>
-              <p>E-Mail: {companyData.email}</p>
-              {companyData.website && <p>Web: {companyData.website}</p>}
+      <div className="print-friendly bg-white text-black p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+        {/* Company Header with Logo Area */}
+        <div className="border-b-2 border-gray-300 pb-6 mb-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">{companyData.company_name}</h1>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>{companyData.address}, {companyData.postal_code} {companyData.city}</p>
             </div>
           </div>
+        </div>
+
+        {/* Invoice Header and Customer Info */}
+        <div className="grid grid-cols-2 gap-8 mb-8">
+          {/* Customer Address */}
+          <div>
+            <div className="mb-6">
+              <p className="text-xs text-gray-500 mb-2">{companyData.company_name} · {companyData.address} · {companyData.postal_code} {companyData.city}</p>
+              <div className="border-b border-gray-300 pb-4">
+                <div className="text-sm font-medium text-gray-800">
+                  <p className="font-bold">{customer.name}</p>
+                  <p>{customer.address}</p>
+                  <p>{customer.postal_code} {customer.city}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Invoice Details */}
           <div className="text-right">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">RECHNUNG</h2>
-            <p className="text-lg font-semibold">{invoice.invoice_number}</p>
-            <p className="text-sm text-gray-600">
-              Datum: {new Date(invoice.invoice_date).toLocaleDateString('de-DE')}
-            </p>
-            <p className="text-sm text-gray-600">
-              Fällig: {new Date(invoice.due_date).toLocaleDateString('de-DE')}
-            </p>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">RECHNUNG</h2>
+              <table className="text-sm text-right ml-auto">
+                <tbody>
+                  <tr>
+                    <td className="pr-4 text-gray-600">RECHNUNGSNUMMER:</td>
+                    <td className="font-medium">{invoice.invoice_number}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4 text-gray-600">RECHNUNGSDATUM:</td>
+                    <td className="font-medium">{new Date(invoice.invoice_date).toLocaleDateString('de-DE')}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4 text-gray-600">ZAHLUNGSZIEL:</td>
+                    <td className="font-medium">30 TAGE</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4 text-gray-600">FÄLLIGKEITSDATUM:</td>
+                    <td className="font-medium">{new Date(invoice.due_date).toLocaleDateString('de-DE')}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4 text-gray-600">STEUERNUMMER:</td>
+                    <td className="font-medium">{companyData.tax_number}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        {/* Customer Info */}
-        <div className="mb-8">
-          <h3 className="font-semibold text-gray-900 mb-2">Rechnungsadresse:</h3>
-          <div className="text-sm text-gray-700">
-            <p className="font-medium">{customer.name}</p>
-            <p>{customer.address}</p>
-            <p>{customer.postal_code} {customer.city}</p>
-            <p>{customer.email}</p>
-          </div>
+        {/* Invoice Title */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold text-gray-800">
+            Rechnung Nummer {invoice.invoice_number.split('-')[1]} ({customer.name})
+          </h3>
         </div>
 
-        {/* Invoice Items */}
+        {/* Greeting */}
+        <div className="mb-6">
+          <p className="text-sm text-gray-700">
+            Sehr geehrte Damen und Herren,
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            wir bedanken uns für Ihren Auftrag und das entgegengebrachte Vertrauen. Im Folgenden finden Sie die detaillierte Aufstellung der erbrachten Leistung und der entsprechenden Kosten.
+          </p>
+        </div>
+
+        {/* Invoice Items Table */}
         <div className="mb-8">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b-2 border-gray-300">
-                <th className="text-left py-2 font-semibold">Beschreibung</th>
-                <th className="text-center py-2 font-semibold">Menge</th>
-                <th className="text-center py-2 font-semibold">Einheit</th>
-                <th className="text-right py-2 font-semibold">Einzelpreis</th>
-                <th className="text-right py-2 font-semibold">Gesamt</th>
+              <tr className="border-b-2 border-gray-400">
+                <th className="text-left py-3 text-sm font-bold text-gray-800">Nr.</th>
+                <th className="text-left py-3 text-sm font-bold text-gray-800">Beschreibung</th>
+                <th className="text-center py-3 text-sm font-bold text-gray-800">Datum</th>
+                <th className="text-center py-3 text-sm font-bold text-gray-800">Menge</th>
+                <th className="text-center py-3 text-sm font-bold text-gray-800">Einheit</th>
+                <th className="text-right py-3 text-sm font-bold text-gray-800">Einzelpreis</th>
+                <th className="text-center py-3 text-sm font-bold text-gray-800">USt %</th>
+                <th className="text-right py-3 text-sm font-bold text-gray-800">Betrag</th>
               </tr>
             </thead>
             <tbody>
               {invoice.items.map((item, index) => (
                 <tr key={index} className="border-b border-gray-200">
-                  <td className="py-2">{item.description}</td>
-                  <td className="text-center py-2">{item.quantity}</td>
-                  <td className="text-center py-2">{item.unit}</td>
-                  <td className="text-right py-2">€{item.unit_price.toFixed(2)}</td>
-                  <td className="text-right py-2">€{item.total_price.toFixed(2)}</td>
+                  <td className="py-3 text-sm">{index + 1}</td>
+                  <td className="py-3 text-sm">{item.description}</td>
+                  <td className="text-center py-3 text-sm">{new Date(invoice.invoice_date).toLocaleDateString('de-DE')}</td>
+                  <td className="text-center py-3 text-sm">{item.quantity}</td>
+                  <td className="text-center py-3 text-sm">{item.unit}</td>
+                  <td className="text-right py-3 text-sm">{item.unit_price.toFixed(2)}</td>
+                  <td className="text-center py-3 text-sm">19</td>
+                  <td className="text-right py-3 text-sm font-medium">{item.total_price.toFixed(2)}€</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Totals */}
+        {/* Totals Section */}
         <div className="flex justify-end mb-8">
-          <div className="w-64">
-            <div className="flex justify-between py-1">
-              <span>Zwischensumme:</span>
-              <span>€{invoice.subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span>MwSt. (19%):</span>
-              <span>€{invoice.tax_amount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between py-2 border-t-2 border-gray-300 font-bold text-lg">
-              <span>Gesamtsumme:</span>
-              <span>€{invoice.total_amount.toFixed(2)}</span>
-            </div>
+          <div className="w-80">
+            <table className="w-full">
+              <tbody>
+                <tr className="border-b border-gray-300">
+                  <td className="py-2 text-right text-sm font-bold">Nettobetrag</td>
+                  <td className="py-2 text-right text-sm font-bold w-24">{invoice.subtotal.toFixed(2)}€</td>
+                </tr>
+                <tr className="border-b border-gray-300">
+                  <td className="py-2 text-right text-sm">USt 19.00 %</td>
+                  <td className="py-2 text-right text-sm w-24">{invoice.tax_amount.toFixed(2)}€</td>
+                </tr>
+                <tr className="border-b-2 border-gray-400">
+                  <td className="py-3 text-right text-lg font-bold">Gesamtsumme</td>
+                  <td className="py-3 text-right text-lg font-bold w-24">{invoice.total_amount.toFixed(2)}€</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Company Details */}
-        <div className="border-t border-gray-300 pt-4 text-xs text-gray-600">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Closing */}
+        <div className="mb-8">
+          <p className="text-sm text-gray-700 font-medium">
+            Vielen Dank für Ihr Vertrauen!
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            Ihr Team vom {companyData.company_name}
+          </p>
+        </div>
+
+        {/* Footer with Company Details */}
+        <div className="border-t border-gray-400 pt-4 text-xs text-gray-600">
+          <div className="grid grid-cols-4 gap-4">
             <div>
-              <p><strong>Steuernummer:</strong> {companyData.tax_number}</p>
+              <p className="font-bold mb-1">{companyData.address.split(',')[0] || companyData.address}</p>
+              <p>{companyData.postal_code} {companyData.city}</p>
+              <p>TEL: {companyData.phone}</p>
+              <p>E-MAIL: {companyData.email}</p>
+              {companyData.website && <p>WEB: {companyData.website}</p>}
             </div>
             <div>
-              <p><strong>Bank:</strong> {companyData.bank_name}</p>
-              <p><strong>IBAN:</strong> {companyData.iban}</p>
-              <p><strong>BIC:</strong> {companyData.bic}</p>
+              <p className="font-bold mb-1">COMDIRECT BANK AG</p>
+              <p>IBAN: {companyData.iban}</p>
+              <p>BIC: {companyData.bic}</p>
             </div>
             <div>
+              <p className="font-bold mb-1">STEUERNUMMER {companyData.tax_number}</p>
+              <p>PAYPAL: {companyData.email}</p>
+            </div>
+            <div className="text-right">
               <p>Zahlbar innerhalb von 30 Tagen ohne Abzug.</p>
-              <p>Vielen Dank für Ihr Vertrauen!</p>
+              <p>Bei Rückfragen stehen wir Ihnen gerne zur Verfügung.</p>
             </div>
           </div>
         </div>
 
         {invoice.notes && (
           <div className="mt-6 pt-4 border-t border-gray-300">
-            <h4 className="font-semibold text-gray-900 mb-2">Notizen:</h4>
+            <h4 className="font-bold text-gray-800 mb-2">Zusätzliche Bemerkungen:</h4>
             <p className="text-sm text-gray-700">{invoice.notes}</p>
           </div>
         )}
