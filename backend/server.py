@@ -978,7 +978,7 @@ async def create_quote(quote_data: QuoteCreate, background_tasks: BackgroundTask
         items.append(item)
         subtotal += total_price
     
-    tax_amount = subtotal * 0.19  # 19% VAT
+    tax_amount = subtotal * 0.19 if quote_data.apply_tax else 0  # Conditional VAT
     total_amount = subtotal + tax_amount
     
     # Parse dates
@@ -996,6 +996,7 @@ async def create_quote(quote_data: QuoteCreate, background_tasks: BackgroundTask
         quote_date=quote_date,
         valid_until=valid_until,
         notes=quote_data.notes,
+        apply_tax=quote_data.apply_tax,
         status="draft"
     )
     
