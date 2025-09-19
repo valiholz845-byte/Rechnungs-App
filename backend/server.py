@@ -162,6 +162,7 @@ class Invoice(BaseModel):
     due_date: datetime
     status: str = "draft"  # draft, sent, paid
     notes: Optional[str] = None
+    apply_tax: bool = True  # New field to control tax application
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class InvoiceCreate(BaseModel):
