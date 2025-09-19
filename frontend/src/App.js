@@ -859,7 +859,7 @@ const InvoicesPage = () => {
                   <p className="text-2xl font-bold text-white">
                     €{invoice.total_amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                   </p>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 flex-wrap gap-2">
                     <Select value={invoice.status} onValueChange={(status) => updateInvoiceStatus(invoice.id, status)}>
                       <SelectTrigger className="w-32 bg-slate-700 border-slate-600 text-white">
                         <SelectValue />
@@ -877,6 +877,17 @@ const InvoicesPage = () => {
                       className="border-slate-600 text-slate-200 hover:bg-slate-700"
                     >
                       <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedInvoice(invoice);
+                        setShowPrintDialog(true);
+                      }}
+                      className="border-slate-600 text-slate-200 hover:bg-slate-700"
+                    >
+                      <Printer className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
