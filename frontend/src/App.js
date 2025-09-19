@@ -748,9 +748,14 @@ const InvoicesPage = () => {
   const [invoices, setInvoices] = useState([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [companyData, setCompanyData] = useState(null);
+  const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
     fetchInvoices();
+    fetchCompanyData();
+    fetchCustomers();
   }, []);
 
   const fetchInvoices = async () => {
@@ -760,6 +765,24 @@ const InvoicesPage = () => {
     } catch (error) {
       console.error('Error fetching invoices:', error);
       toast.error('Fehler beim Laden der Rechnungen');
+    }
+  };
+
+  const fetchCompanyData = async () => {
+    try {
+      const response = await axios.get(`${API}/company`);
+      setCompanyData(response.data);
+    } catch (error) {
+      console.error('Error fetching company data:', error);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
     }
   };
 
