@@ -526,6 +526,31 @@ class InvoiceManagerAPITester:
             404,
             data=invalid_invoice_data
         )
+        
+        # Test GET non-existent todo
+        self.run_test(
+            "Get Non-existent ToDo",
+            "GET",
+            "todos/non-existent-id",
+            404
+        )
+        
+        # Test UPDATE non-existent todo
+        self.run_test(
+            "Update Non-existent ToDo",
+            "PUT",
+            "todos/non-existent-id",
+            404,
+            data={"title": "Updated"}
+        )
+        
+        # Test DELETE non-existent todo
+        self.run_test(
+            "Delete Non-existent ToDo",
+            "DELETE",
+            "todos/non-existent-id",
+            404
+        )
 
     def cleanup(self):
         """Clean up created test data"""
