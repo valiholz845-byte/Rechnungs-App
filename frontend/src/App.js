@@ -883,16 +883,29 @@ const InvoiceForm = ({ onSuccess }) => {
             <span>Zwischensumme:</span>
             <span>€{totals.subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-slate-300">
-            <span>MwSt. (19%):</span>
-            <span>€{totals.tax.toFixed(2)}</span>
-          </div>
+          {applyTax && (
+            <div className="flex justify-between text-slate-300">
+              <span>MwSt. (19%):</span>
+              <span>€{totals.tax.toFixed(2)}</span>
+            </div>
+          )}
           <Separator className="bg-slate-600" />
           <div className="flex justify-between font-bold text-white">
-            <span>Gesamtsumme:</span>
+            <span>Gesamtsumme{!applyTax ? ' (MwSt.-befreit)' : ''}:</span>
             <span>€{totals.total.toFixed(2)}</span>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
+        <div>
+          <Label className="text-slate-200 font-medium">Mehrwertsteuer anwenden</Label>
+          <p className="text-xs text-slate-400">19% MwSt. zu der Rechnung hinzufügen</p>
+        </div>
+        <Switch
+          checked={applyTax}
+          onCheckedChange={setApplyTax}
+        />
       </div>
 
       <div>
