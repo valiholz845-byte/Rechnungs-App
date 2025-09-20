@@ -2358,30 +2358,55 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
       </div>
       
       <div id="invoice-content" className="print-friendly bg-white text-black p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
-        {/* Company Header */}
+        {/* Company Header with Complete Information */}
         <div className="border-b-2 border-slate-300 pb-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Complete Company Information */}
             <div>
               <h1 className="text-3xl font-bold text-slate-900 mb-4">{companyData.company_name}</h1>
-              <div className="text-sm text-slate-700 space-y-1">
-                <p className="font-semibold">Geschäftsadresse:</p>
-                <p>{companyData.address}</p>
-                <p>{companyData.postal_code} {companyData.city}</p>
-                <div className="mt-3 space-y-1">
-                  <p><strong>Tel:</strong> {companyData.phone}</p>
-                  <p><strong>E-Mail:</strong> {companyData.email}</p>
-                  {companyData.website && <p><strong>Web:</strong> {companyData.website}</p>}
+              <div className="text-sm text-slate-700 space-y-2 bg-slate-50 p-4 rounded-lg">
+                <div>
+                  <p className="font-semibold text-slate-900">📍 Geschäftsadresse:</p>
+                  <p>{companyData.address}</p>
+                  <p>{companyData.postal_code} {companyData.city}</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 mt-3">
+                  <p><strong>📞 Telefon:</strong> {companyData.phone}</p>
+                  <p><strong>📧 E-Mail:</strong> {companyData.email}</p>
+                  {companyData.website && <p><strong>🌐 Website:</strong> {companyData.website}</p>}
+                  <p><strong>🏦 Steuernummer:</strong> {companyData.tax_number}</p>
+                </div>
+                <div className="border-t border-slate-200 pt-3 mt-3">
+                  <p className="font-semibold text-slate-900">💳 Bankverbindung:</p>
+                  <p><strong>Bank:</strong> {companyData.bank_name}</p>
+                  <p><strong>IBAN:</strong> {companyData.iban}</p>
+                  <p><strong>BIC:</strong> {companyData.bic}</p>
                 </div>
               </div>
             </div>
+            
+            {/* Invoice Details */}
             <div className="text-right">
-              <div className="bg-slate-100 p-4 rounded-lg">
-                <h2 className="text-2xl font-bold text-slate-900 mb-3">RECHNUNG</h2>
-                <div className="text-sm space-y-1">
-                  <p><strong>Rechnungsnummer:</strong> {invoice.invoice_number}</p>
-                  <p><strong>Rechnungsdatum:</strong> {new Date(invoice.invoice_date).toLocaleDateString('de-DE')}</p>
-                  <p><strong>Fälligkeitsdatum:</strong> {new Date(invoice.due_date).toLocaleDateString('de-DE')}</p>
-                  <p><strong>Steuernummer:</strong> {companyData.tax_number}</p>
+              <div className="bg-blue-100 p-6 rounded-lg border-2 border-blue-200">
+                <h2 className="text-3xl font-bold text-blue-900 mb-4">RECHNUNG</h2>
+                <div className="space-y-3 text-left">
+                  <div className="bg-white p-3 rounded">
+                    <p className="text-xs text-slate-600">Rechnungsnummer</p>
+                    <p className="text-xl font-bold text-blue-800">{invoice.invoice_number}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded">
+                    <p className="text-xs text-slate-600">Rechnungsdatum</p>
+                    <p className="font-semibold">{new Date(invoice.invoice_date).toLocaleDateString('de-DE')}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded">
+                    <p className="text-xs text-slate-600">Fälligkeitsdatum</p>
+                    <p className="font-semibold text-red-600">{new Date(invoice.due_date).toLocaleDateString('de-DE')}</p>
+                  </div>
+                  <div className="bg-blue-600 text-white p-3 rounded text-center">
+                    <p className="text-xs">Rechnungsbetrag</p>
+                    <p className="text-2xl font-bold">€{invoice.total_amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</p>
+                    {!invoice.apply_tax && <p className="text-xs">MwSt.-befreit</p>}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2392,68 +2417,76 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <p className="text-xs text-slate-500 mb-3">{companyData.company_name} · {companyData.address} · {companyData.postal_code} {companyData.city}</p>
-              <div className="border-b border-slate-300 pb-4 mb-4">
-                <h3 className="font-bold text-slate-900 mb-2">Rechnungsadresse:</h3>
-                <div className="text-sm text-slate-800">
-                  <p className="font-semibold text-lg">{customer.name}</p>
+              <p className="text-xs text-slate-500 mb-3 border-b pb-1">
+                {companyData.company_name} · {companyData.address} · {companyData.postal_code} {companyData.city}
+              </p>
+              <div className="bg-slate-50 p-4 rounded-lg border">
+                <h3 className="font-bold text-slate-900 mb-3 text-lg">📬 Rechnungsadresse:</h3>
+                <div className="text-sm text-slate-800 space-y-1">
+                  <p className="font-bold text-lg text-slate-900">{customer.name}</p>
                   <p>{customer.address}</p>
                   <p>{customer.postal_code} {customer.city}</p>
-                  <p>{customer.email}</p>
+                  <p className="font-semibold">✉️ {customer.email}</p>
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-bold text-slate-900 mb-2">Rechnungsbetrag</h3>
-                <p className="text-3xl font-bold text-blue-600">
-                  €{invoice.total_amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
-                </p>
-                {!invoice.apply_tax && (
-                  <p className="text-sm text-slate-600 mt-1">MwSt.-befreit</p>
-                )}
+            <div>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h3 className="font-bold text-green-800 mb-3">💰 Zahlungshinweise</h3>
+                <div className="text-sm space-y-2">
+                  <p><strong>Zahlungsziel:</strong> 30 Tage netto</p>
+                  <p><strong>Fällig am:</strong> {new Date(invoice.due_date).toLocaleDateString('de-DE')}</p>
+                  <p><strong>Verwendungszweck:</strong> {invoice.invoice_number}</p>
+                  <div className="border-t border-green-200 pt-2 mt-2">
+                    <p className="font-semibold text-green-800">Bankverbindung:</p>
+                    <p>{companyData.bank_name}</p>
+                    <p><strong>IBAN:</strong> {companyData.iban}</p>
+                    <p><strong>BIC:</strong> {companyData.bic}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Greeting */}
-        <div className="mb-6">
-          <h3 className="text-lg font-bold text-slate-900 mb-3">
+        <div className="mb-6 bg-blue-50 p-4 rounded-lg">
+          <h3 className="text-xl font-bold text-slate-900 mb-3">
             Rechnung {invoice.invoice_number} für {customer.name}
           </h3>
           <p className="text-sm text-slate-700">
-            Sehr geehrte Damen und Herren,
+            <strong>Sehr geehrte Damen und Herren,</strong>
           </p>
           <p className="text-sm text-slate-700 mt-2">
-            hiermit stellen wir Ihnen die nachfolgend aufgeführten Leistungen in Rechnung:
+            hiermit stellen wir Ihnen die nachfolgend aufgeführten Leistungen in Rechnung. 
+            Vielen Dank für Ihr Vertrauen in unsere Dienstleistungen.
           </p>
         </div>
 
         {/* Invoice Items Table */}
         <div className="mb-8">
-          <table className="w-full border-collapse border border-slate-300">
+          <table className="w-full border-collapse border-2 border-slate-400">
             <thead>
-              <tr className="bg-slate-100">
-                <th className="border border-slate-300 text-left py-3 px-4 text-sm font-bold text-slate-800">Pos.</th>
-                <th className="border border-slate-300 text-left py-3 px-4 text-sm font-bold text-slate-800">Beschreibung</th>
-                <th className="border border-slate-300 text-center py-3 px-4 text-sm font-bold text-slate-800">Menge</th>
-                <th className="border border-slate-300 text-center py-3 px-4 text-sm font-bold text-slate-800">Einheit</th>
-                <th className="border border-slate-300 text-right py-3 px-4 text-sm font-bold text-slate-800">Einzelpreis</th>
-                {invoice.apply_tax && <th className="border border-slate-300 text-center py-3 px-4 text-sm font-bold text-slate-800">MwSt.</th>}
-                <th className="border border-slate-300 text-right py-3 px-4 text-sm font-bold text-slate-800">Gesamtpreis</th>
+              <tr className="bg-slate-200">
+                <th className="border border-slate-400 text-left py-4 px-4 text-sm font-bold text-slate-900">Pos.</th>
+                <th className="border border-slate-400 text-left py-4 px-4 text-sm font-bold text-slate-900">Beschreibung</th>
+                <th className="border border-slate-400 text-center py-4 px-4 text-sm font-bold text-slate-900">Menge</th>
+                <th className="border border-slate-400 text-center py-4 px-4 text-sm font-bold text-slate-900">Einheit</th>
+                <th className="border border-slate-400 text-right py-4 px-4 text-sm font-bold text-slate-900">Einzelpreis</th>
+                {invoice.apply_tax && <th className="border border-slate-400 text-center py-4 px-4 text-sm font-bold text-slate-900">MwSt.</th>}
+                <th className="border border-slate-400 text-right py-4 px-4 text-sm font-bold text-slate-900">Gesamtpreis</th>
               </tr>
             </thead>
             <tbody>
               {invoice.items.map((item, index) => (
-                <tr key={index} className="hover:bg-slate-50">
-                  <td className="border border-slate-300 py-3 px-4 text-sm">{index + 1}</td>
-                  <td className="border border-slate-300 py-3 px-4 text-sm">{item.description}</td>
-                  <td className="border border-slate-300 text-center py-3 px-4 text-sm">{item.quantity}</td>
-                  <td className="border border-slate-300 text-center py-3 px-4 text-sm">{item.unit}</td>
-                  <td className="border border-slate-300 text-right py-3 px-4 text-sm">€{item.unit_price.toFixed(2)}</td>
-                  {invoice.apply_tax && <td className="border border-slate-300 text-center py-3 px-4 text-sm">19%</td>}
-                  <td className="border border-slate-300 text-right py-3 px-4 text-sm font-semibold">€{item.total_price.toFixed(2)}</td>
+                <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                  <td className="border border-slate-300 py-4 px-4 text-sm font-medium">{index + 1}</td>
+                  <td className="border border-slate-300 py-4 px-4 text-sm">{item.description}</td>
+                  <td className="border border-slate-300 text-center py-4 px-4 text-sm font-medium">{item.quantity}</td>
+                  <td className="border border-slate-300 text-center py-4 px-4 text-sm">{item.unit}</td>
+                  <td className="border border-slate-300 text-right py-4 px-4 text-sm">€{item.unit_price.toFixed(2)}</td>
+                  {invoice.apply_tax && <td className="border border-slate-300 text-center py-4 px-4 text-sm">19%</td>}
+                  <td className="border border-slate-300 text-right py-4 px-4 text-sm font-bold text-blue-600">€{item.total_price.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -2462,25 +2495,25 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
 
         {/* Totals Section */}
         <div className="flex justify-end mb-8">
-          <div className="w-80">
-            <div className="bg-slate-50 p-4 rounded-lg border">
+          <div className="w-96">
+            <div className="bg-slate-50 p-6 rounded-lg border-2 border-slate-300">
               <table className="w-full">
                 <tbody>
-                  <tr className="border-b border-slate-200">
-                    <td className="py-2 text-right text-sm font-semibold text-slate-800">Nettobetrag:</td>
-                    <td className="py-2 text-right text-sm font-semibold w-24">€{invoice.subtotal.toFixed(2)}</td>
+                  <tr className="border-b border-slate-300">
+                    <td className="py-3 text-right text-base font-semibold text-slate-800">Nettobetrag:</td>
+                    <td className="py-3 text-right text-base font-semibold w-32">€{invoice.subtotal.toFixed(2)}</td>
                   </tr>
                   {invoice.apply_tax && (
-                    <tr className="border-b border-slate-200">
-                      <td className="py-2 text-right text-sm text-slate-700">MwSt. (19%):</td>
-                      <td className="py-2 text-right text-sm w-24">€{invoice.tax_amount.toFixed(2)}</td>
+                    <tr className="border-b border-slate-300">
+                      <td className="py-3 text-right text-base text-slate-700">MwSt. (19%):</td>
+                      <td className="py-3 text-right text-base w-32">€{invoice.tax_amount.toFixed(2)}</td>
                     </tr>
                   )}
-                  <tr className="border-t-2 border-slate-400">
-                    <td className="py-3 text-right text-lg font-bold text-slate-900">
-                      Rechnungsbetrag{!invoice.apply_tax ? ' (MwSt.-befreit)' : ''}:
+                  <tr className="border-t-2 border-blue-400 bg-blue-50">
+                    <td className="py-4 text-right text-xl font-bold text-blue-900">
+                      RECHNUNGSBETRAG{!invoice.apply_tax ? ' (MwSt.-befreit)' : ''}:
                     </td>
-                    <td className="py-3 text-right text-lg font-bold text-blue-600 w-24">
+                    <td className="py-4 text-right text-xl font-bold text-blue-600 w-32">
                       €{invoice.total_amount.toFixed(2)}
                     </td>
                   </tr>
@@ -2490,69 +2523,73 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
           </div>
         </div>
 
-        {/* Payment Information */}
-        <div className="mb-8 bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-bold text-slate-900 mb-3">💰 Zahlungsinformationen</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        {/* Company Footer with All Information */}
+        <div className="border-t-2 border-slate-400 pt-6 bg-slate-50 p-6 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Contact Info */}
             <div>
-              <p><strong>Zahlungsziel:</strong> 30 Tage (bis {new Date(invoice.due_date).toLocaleDateString('de-DE')})</p>
-              <p><strong>Verwendungszweck:</strong> {invoice.invoice_number}</p>
+              <h4 className="font-bold text-slate-900 mb-3 text-base">📞 Kontaktdaten</h4>
+              <div className="text-sm space-y-1">
+                <p className="font-bold text-slate-900">{companyData.company_name}</p>
+                <p>{companyData.address}</p>
+                <p>{companyData.postal_code} {companyData.city}</p>
+                <p><strong>Tel:</strong> {companyData.phone}</p>
+                <p><strong>E-Mail:</strong> {companyData.email}</p>
+                {companyData.website && <p><strong>Web:</strong> {companyData.website}</p>}
+              </div>
             </div>
+            
+            {/* Banking Info */}
             <div>
-              <p><strong>Bankverbindung:</strong></p>
-              <p>{companyData.bank_name}</p>
-              <p><strong>IBAN:</strong> {companyData.iban}</p>
-              <p><strong>BIC:</strong> {companyData.bic}</p>
+              <h4 className="font-bold text-slate-900 mb-3 text-base">🏦 Bankverbindung</h4>
+              <div className="text-sm space-y-1">
+                <p className="font-semibold">{companyData.bank_name}</p>
+                <p><strong>IBAN:</strong> {companyData.iban}</p>
+                <p><strong>BIC:</strong> {companyData.bic}</p>
+                <div className="mt-3">
+                  <p><strong>Steuernummer:</strong></p>
+                  <p className="font-semibold text-slate-900">{companyData.tax_number}</p>
+                </div>
+              </div>
             </div>
+            
+            {/* Legal Info */}
+            <div>
+              <h4 className="font-bold text-slate-900 mb-3 text-base">⚖️ Rechtliche Hinweise</h4>
+              <div className="text-sm space-y-2">
+                <p><strong>Zahlungsziel:</strong> 30 Tage netto</p>
+                <p><strong>Bei Verzug:</strong> 9% Zinsen p.a. über Basiszinssatz</p>
+                <p className="text-green-700 font-semibold">Vielen Dank für Ihr Vertrauen!</p>
+                <p>Bei Fragen: {companyData.phone}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Additional Company Info Bar */}
+          <div className="mt-6 pt-4 border-t border-slate-300 text-center">
+            <p className="text-sm text-slate-600">
+              <strong>{companyData.company_name}</strong> • 
+              {companyData.address}, {companyData.postal_code} {companyData.city} • 
+              Tel: {companyData.phone} • 
+              {companyData.website && `${companyData.website} • `}
+              Steuernr.: {companyData.tax_number}
+            </p>
           </div>
         </div>
 
-        {/* Closing */}
-        <div className="mb-8">
-          <p className="text-sm text-slate-700 mb-2">
-            <strong>Vielen Dank für Ihr Vertrauen!</strong>
+        {/* Closing Message */}
+        <div className="mt-6 bg-blue-50 p-4 rounded-lg text-center">
+          <p className="text-base text-slate-700 font-semibold">
+            Vielen Dank für Ihr Vertrauen in {companyData.company_name}!
           </p>
-          <p className="text-sm text-slate-700">
-            Bei Fragen zu dieser Rechnung stehen wir Ihnen gerne zur Verfügung.
+          <p className="text-sm text-slate-600 mt-2">
+            Bei Fragen zu dieser Rechnung erreichen Sie uns unter {companyData.phone} oder {companyData.email}
           </p>
-          <p className="text-sm text-slate-700 mt-4">
-            Mit freundlichen Grüßen<br/>
-            <strong>{companyData.company_name}</strong>
-          </p>
-        </div>
-
-        {/* Footer with Legal Information */}
-        <div className="border-t border-slate-300 pt-4 text-xs text-slate-600">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="font-bold mb-2">Kontakt:</p>
-              <p>{companyData.company_name}</p>
-              <p>{companyData.address}</p>
-              <p>{companyData.postal_code} {companyData.city}</p>
-              <p>Tel: {companyData.phone}</p>
-              <p>E-Mail: {companyData.email}</p>
-            </div>
-            <div>
-              <p className="font-bold mb-2">Bankverbindung:</p>
-              <p>{companyData.bank_name}</p>
-              <p>IBAN: {companyData.iban}</p>
-              <p>BIC: {companyData.bic}</p>
-              <br/>
-              <p><strong>Steuernummer:</strong> {companyData.tax_number}</p>
-            </div>
-            <div>
-              <p className="font-bold mb-2">Zahlungshinweise:</p>
-              <p>Zahlbar ohne Abzug binnen 30 Tagen.</p>
-              <p>Bei Zahlungsverzug werden Zinsen in Höhe von 9% über dem Basiszinssatz berechnet.</p>
-              <br/>
-              <p className="font-bold">Vielen Dank für Ihre Zusammenarbeit!</p>
-            </div>
-          </div>
         </div>
 
         {invoice.notes && (
-          <div className="mt-6 pt-4 border-t border-slate-300">
-            <h4 className="font-bold text-slate-900 mb-2">Zusätzliche Bemerkungen:</h4>
+          <div className="mt-6 pt-4 border-t border-slate-300 bg-yellow-50 p-4 rounded-lg">
+            <h4 className="font-bold text-slate-900 mb-2">📝 Zusätzliche Bemerkungen:</h4>
             <p className="text-sm text-slate-700">{invoice.notes}</p>
           </div>
         )}
