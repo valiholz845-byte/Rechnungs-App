@@ -2561,119 +2561,153 @@ const PrintInvoice = ({ invoice, companyData, customer }) => {
   );
 };
 
-// Print Quote Component (similar to PrintInvoice)
+// Enhanced German Quote Print/PDF Component
 const PrintQuote = ({ quote, companyData, customer }) => {
   const printQuote = () => {
     window.print();
+  };
+
+  const downloadPDF = async () => {
+    try {
+      const element = document.getElementById('quote-content');
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`Angebot_${quote.quote_number}.pdf`);
+      
+      toast.success('PDF erfolgreich heruntergeladen');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Fehler beim Erstellen der PDF');
+    }
   };
 
   if (!quote || !companyData || !customer) return null;
 
   return (
     <div className="print-container">
-      <div className="no-print mb-4 flex justify-end">
+      <div className="no-print mb-4 flex justify-end space-x-2">
+        <Button onClick={downloadPDF} className="bg-green-600 hover:bg-green-700">
+          <Download className="h-4 w-4 mr-2" />
+          PDF speichern
+        </Button>
         <Button onClick={printQuote} className="bg-blue-600 hover:bg-blue-700">
           <Printer className="h-4 w-4 mr-2" />
           Drucken
         </Button>
       </div>
       
-      <div className="print-friendly bg-white text-black p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
-        {/* Company Header with Logo Area */}
-        <div className="border-b-2 border-gray-300 pb-6 mb-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{companyData.company_name}</h1>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>{companyData.address}, {companyData.postal_code} {companyData.city}</p>
+      <div id="quote-content" className="print-friendly bg-white text-black p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+        {/* Company Header */}
+        <div className="border-b-2 border-slate-300 pb-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-4">{companyData.company_name}</h1>
+              <div className="text-sm text-slate-700 space-y-1">
+                <p className="font-semibold">Geschäftsadresse:</p>
+                <p>{companyData.address}</p>
+                <p>{companyData.postal_code} {companyData.city}</p>
+                <div className="mt-3 space-y-1">
+                  <p><strong>Tel:</strong> {companyData.phone}</p>
+                  <p><strong>E-Mail:</strong> {companyData.email}</p>
+                  {companyData.website && <p><strong>Web:</strong> {companyData.website}</p>}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Quote Header and Customer Info */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          {/* Customer Address */}
-          <div>
-            <div className="mb-6">
-              <p className="text-xs text-gray-500 mb-2">{companyData.company_name} · {companyData.address} · {companyData.postal_code} {companyData.city}</p>
-              <div className="border-b border-gray-300 pb-4">
-                <div className="text-sm font-medium text-gray-800">
-                  <p className="font-bold">{customer.name}</p>
-                  <p>{customer.address}</p>
-                  <p>{customer.postal_code} {customer.city}</p>
+            <div className="text-right">
+              <div className="bg-slate-100 p-4 rounded-lg">
+                <h2 className="text-2xl font-bold text-slate-900 mb-3">ANGEBOT</h2>
+                <div className="text-sm space-y-1">
+                  <p><strong>Angebotsnummer:</strong> {quote.quote_number}</p>
+                  <p><strong>Angebotsdatum:</strong> {new Date(quote.quote_date).toLocaleDateString('de-DE')}</p>
+                  <p><strong>Gültig bis:</strong> {new Date(quote.valid_until).toLocaleDateString('de-DE')}</p>
+                  <p><strong>Steuernummer:</strong> {companyData.tax_number}</p>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Quote Details */}
-          <div className="text-right">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">ANGEBOT</h2>
-              <table className="text-sm text-right ml-auto">
-                <tbody>
-                  <tr>
-                    <td className="pr-4 text-gray-600">ANGEBOTSNUMMER:</td>
-                    <td className="font-medium">{quote.quote_number}</td>
-                  </tr>
-                  <tr>
-                    <td className="pr-4 text-gray-600">ANGEBOTSDATUM:</td>
-                    <td className="font-medium">{new Date(quote.quote_date).toLocaleDateString('de-DE')}</td>
-                  </tr>
-                  <tr>
-                    <td className="pr-4 text-gray-600">GÜLTIG BIS:</td>
-                    <td className="font-medium">{new Date(quote.valid_until).toLocaleDateString('de-DE')}</td>
-                  </tr>
-                  <tr>
-                    <td className="pr-4 text-gray-600">STEUERNUMMER:</td>
-                    <td className="font-medium">{companyData.tax_number}</td>
-                  </tr>
-                </tbody>
-              </table>
+        {/* Customer Information */}
+        <div className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <p className="text-xs text-slate-500 mb-3">{companyData.company_name} · {companyData.address} · {companyData.postal_code} {companyData.city}</p>
+              <div className="border-b border-slate-300 pb-4 mb-4">
+                <h3 className="font-bold text-slate-900 mb-2">Angebotempfänger:</h3>
+                <div className="text-sm text-slate-800">
+                  <p className="font-semibold text-lg">{customer.name}</p>
+                  <p>{customer.address}</p>
+                  <p>{customer.postal_code} {customer.city}</p>
+                  <p>{customer.email}</p>
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-bold text-slate-900 mb-2">Angebotssumme</h3>
+                <p className="text-3xl font-bold text-green-600">
+                  €{quote.total_amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                </p>
+                {!quote.apply_tax && (
+                  <p className="text-sm text-slate-600 mt-1">MwSt.-befreit</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Quote Title */}
-        <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-800">
-            Angebot Nummer {quote.quote_number.split('-')[1]} ({customer.name})
-          </h3>
-        </div>
-
         {/* Greeting */}
         <div className="mb-6">
-          <p className="text-sm text-gray-700">
+          <h3 className="text-lg font-bold text-slate-900 mb-3">
+            Angebot {quote.quote_number} für {customer.name}
+          </h3>
+          <p className="text-sm text-slate-700">
             Sehr geehrte Damen und Herren,
           </p>
-          <p className="text-sm text-gray-700 mt-2">
+          <p className="text-sm text-slate-700 mt-2">
             vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:
           </p>
         </div>
 
         {/* Quote Items Table */}
         <div className="mb-8">
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse border border-slate-300">
             <thead>
-              <tr className="border-b-2 border-gray-400">
-                <th className="text-left py-3 text-sm font-bold text-gray-800">Nr.</th>
-                <th className="text-left py-3 text-sm font-bold text-gray-800">Beschreibung</th>
-                <th className="text-center py-3 text-sm font-bold text-gray-800">Menge</th>
-                <th className="text-center py-3 text-sm font-bold text-gray-800">Einheit</th>
-                <th className="text-right py-3 text-sm font-bold text-gray-800">Einzelpreis</th>
-                {quote.apply_tax && <th className="text-center py-3 text-sm font-bold text-gray-800">USt %</th>}
-                <th className="text-right py-3 text-sm font-bold text-gray-800">Betrag</th>
+              <tr className="bg-slate-100">
+                <th className="border border-slate-300 text-left py-3 px-4 text-sm font-bold text-slate-800">Pos.</th>
+                <th className="border border-slate-300 text-left py-3 px-4 text-sm font-bold text-slate-800">Beschreibung</th>
+                <th className="border border-slate-300 text-center py-3 px-4 text-sm font-bold text-slate-800">Menge</th>
+                <th className="border border-slate-300 text-center py-3 px-4 text-sm font-bold text-slate-800">Einheit</th>
+                <th className="border border-slate-300 text-right py-3 px-4 text-sm font-bold text-slate-800">Einzelpreis</th>
+                {quote.apply_tax && <th className="border border-slate-300 text-center py-3 px-4 text-sm font-bold text-slate-800">MwSt.</th>}
+                <th className="border border-slate-300 text-right py-3 px-4 text-sm font-bold text-slate-800">Gesamtpreis</th>
               </tr>
             </thead>
             <tbody>
               {quote.items.map((item, index) => (
-                <tr key={index} className="border-b border-gray-200">
-                  <td className="py-3 text-sm">{index + 1}</td>
-                  <td className="py-3 text-sm">{item.description}</td>
-                  <td className="text-center py-3 text-sm">{item.quantity}</td>
-                  <td className="text-center py-3 text-sm">{item.unit}</td>
-                  <td className="text-right py-3 text-sm">{item.unit_price.toFixed(2)}€</td>
-                  {quote.apply_tax && <td className="text-center py-3 text-sm">19</td>}
-                  <td className="text-right py-3 text-sm font-medium">{item.total_price.toFixed(2)}€</td>
+                <tr key={index} className="hover:bg-slate-50">
+                  <td className="border border-slate-300 py-3 px-4 text-sm">{index + 1}</td>
+                  <td className="border border-slate-300 py-3 px-4 text-sm">{item.description}</td>
+                  <td className="border border-slate-300 text-center py-3 px-4 text-sm">{item.quantity}</td>
+                  <td className="border border-slate-300 text-center py-3 px-4 text-sm">{item.unit}</td>
+                  <td className="border border-slate-300 text-right py-3 px-4 text-sm">€{item.unit_price.toFixed(2)}</td>
+                  {quote.apply_tax && <td className="border border-slate-300 text-center py-3 px-4 text-sm">19%</td>}
+                  <td className="border border-slate-300 text-right py-3 px-4 text-sm font-semibold">€{item.total_price.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -2683,71 +2717,90 @@ const PrintQuote = ({ quote, companyData, customer }) => {
         {/* Totals Section */}
         <div className="flex justify-end mb-8">
           <div className="w-80">
-            <table className="w-full">
-              <tbody>
-                <tr className="border-b border-gray-300">
-                  <td className="py-2 text-right text-sm font-bold">Nettobetrag</td>
-                  <td className="py-2 text-right text-sm font-bold w-24">{quote.subtotal.toFixed(2)}€</td>
-                </tr>
-                {quote.apply_tax && (
-                  <tr className="border-b border-gray-300">
-                    <td className="py-2 text-right text-sm">USt 19.00 %</td>
-                    <td className="py-2 text-right text-sm w-24">{quote.tax_amount.toFixed(2)}€</td>
+            <div className="bg-slate-50 p-4 rounded-lg border">
+              <table className="w-full">
+                <tbody>
+                  <tr className="border-b border-slate-200">
+                    <td className="py-2 text-right text-sm font-semibold text-slate-800">Nettobetrag:</td>
+                    <td className="py-2 text-right text-sm font-semibold w-24">€{quote.subtotal.toFixed(2)}</td>
                   </tr>
-                )}
-                <tr className="border-b-2 border-gray-400">
-                  <td className="py-3 text-right text-lg font-bold">Angebotssumme{!quote.apply_tax ? ' (MwSt.-befreit)' : ''}</td>
-                  <td className="py-3 text-right text-lg font-bold w-24">{quote.total_amount.toFixed(2)}€</td>
-                </tr>
-              </tbody>
-            </table>
+                  {quote.apply_tax && (
+                    <tr className="border-b border-slate-200">
+                      <td className="py-2 text-right text-sm text-slate-700">MwSt. (19%):</td>
+                      <td className="py-2 text-right text-sm w-24">€{quote.tax_amount.toFixed(2)}</td>
+                    </tr>
+                  )}
+                  <tr className="border-t-2 border-slate-400">
+                    <td className="py-3 text-right text-lg font-bold text-slate-900">
+                      Angebotssumme{!quote.apply_tax ? ' (MwSt.-befreit)' : ''}:
+                    </td>
+                    <td className="py-3 text-right text-lg font-bold text-green-600 w-24">
+                      €{quote.total_amount.toFixed(2)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Validity and Terms */}
+        <div className="mb-8 bg-orange-50 p-4 rounded-lg">
+          <h3 className="font-bold text-slate-900 mb-3">⏰ Angebotsbedingungen</h3>
+          <div className="text-sm space-y-2">
+            <p><strong>Gültigkeit:</strong> Dieses Angebot ist gültig bis zum {new Date(quote.valid_until).toLocaleDateString('de-DE')}</p>
+            <p><strong>Zahlungsbedingungen:</strong> 30 Tage netto nach Rechnungsstellung</p>
+            <p><strong>Bankverbindung:</strong> {companyData.bank_name}, IBAN: {companyData.iban}, BIC: {companyData.bic}</p>
           </div>
         </div>
 
         {/* Closing */}
         <div className="mb-8">
-          <p className="text-sm text-gray-700 font-medium">
-            Dieses Angebot ist gültig bis zum {new Date(quote.valid_until).toLocaleDateString('de-DE')}.
+          <p className="text-sm text-slate-700 mb-2">
+            <strong>Wir freuen uns auf Ihre Rückmeldung!</strong>
           </p>
-          <p className="text-sm text-gray-700 mt-2">
-            Wir freuen uns auf Ihre Rückmeldung!
+          <p className="text-sm text-slate-700">
+            Bei Fragen zu diesem Angebot stehen wir Ihnen gerne zur Verfügung.
           </p>
-          <p className="text-sm text-gray-700 mt-2">
-            Mit freundlichen Grüßen,<br/>
-            Ihr Team vom {companyData.company_name}
+          <p className="text-sm text-slate-700 mt-4">
+            Mit freundlichen Grüßen<br/>
+            <strong>{companyData.company_name}</strong>
           </p>
         </div>
 
-        {/* Footer with Company Details */}
-        <div className="border-t border-gray-400 pt-4 text-xs text-gray-600">
-          <div className="grid grid-cols-4 gap-4">
+        {/* Footer with Legal Information */}
+        <div className="border-t border-slate-300 pt-4 text-xs text-slate-600">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="font-bold mb-1">{companyData.address.split(',')[0] || companyData.address}</p>
+              <p className="font-bold mb-2">Kontakt:</p>
+              <p>{companyData.company_name}</p>
+              <p>{companyData.address}</p>
               <p>{companyData.postal_code} {companyData.city}</p>
-              <p>TEL: {companyData.phone}</p>
-              <p>E-MAIL: {companyData.email}</p>
-              {companyData.website && <p>WEB: {companyData.website}</p>}
+              <p>Tel: {companyData.phone}</p>
+              <p>E-Mail: {companyData.email}</p>
             </div>
             <div>
-              <p className="font-bold mb-1">COMDIRECT BANK AG</p>
+              <p className="font-bold mb-2">Bankverbindung:</p>
+              <p>{companyData.bank_name}</p>
               <p>IBAN: {companyData.iban}</p>
               <p>BIC: {companyData.bic}</p>
+              <br/>
+              <p><strong>Steuernummer:</strong> {companyData.tax_number}</p>
             </div>
             <div>
-              <p className="font-bold mb-1">STEUERNUMMER {companyData.tax_number}</p>
-              <p>PAYPAL: {companyData.email}</p>
-            </div>
-            <div className="text-right">
-              <p>Bei Annahme des Angebots wird eine Rechnung erstellt.</p>
-              <p>Bei Rückfragen stehen wir Ihnen gerne zur Verfügung.</p>
+              <p className="font-bold mb-2">Hinweise:</p>
+              <p>Bei Annahme des Angebots wird eine entsprechende Rechnung erstellt.</p>
+              <p>Preise verstehen sich zzgl. der gesetzlichen MwSt.</p>
+              <br/>
+              <p className="font-bold">Vielen Dank für Ihr Interesse!</p>
             </div>
           </div>
         </div>
 
         {quote.notes && (
-          <div className="mt-6 pt-4 border-t border-gray-300">
-            <h4 className="font-bold text-gray-800 mb-2">Zusätzliche Bemerkungen:</h4>
-            <p className="text-sm text-gray-700">{quote.notes}</p>
+          <div className="mt-6 pt-4 border-t border-slate-300">
+            <h4 className="font-bold text-slate-900 mb-2">Zusätzliche Bemerkungen:</h4>
+            <p className="text-sm text-slate-700">{quote.notes}</p>
           </div>
         )}
       </div>
